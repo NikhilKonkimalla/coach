@@ -1,20 +1,41 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Register</title>
+    <meta charset="UTF-8">
+    <title>Register New User</title>
 </head>
 <body>
-    <h1>Create User</h1>
-    <form method="post" th:action="@{/register}">
+    <h1>Register New User</h1>
+    <form action="#" th:action="@{/register-submit}" th:object="${user}" method="post">
         <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required autofocus>
+            <label for="name">Name:</label>
+            <input type="text" id="name" th:field="*{name}" required>
         </div>
         <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+            <label for="name">User Name:</label>
+            <input type="text" id="userName" th:field="*{userName}" required>
         </div>
-        <button type="submit">Register</button>
+        <div>
+            <label for="name">Password:</label>
+            <input type="text" id="password" th:field="*{password}" required>
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" th:field="*{email}" required>
+        </div>
+        <div>
+            <label for="text">Phone Number:</label>
+            <input type="text" id="text" th:field="*{phoneNumber}">
+        </div>
+        <div>
+            <label for="preferredCommunication">Preferred Way to Communicate:</label>
+            <input type="text" id="preferredCommunication" th:field="*{preferredCommunication}">
+        </div>
+        <div>
+            <label for="graduationYear">Graduation Year:</label>
+            <input type="text" id="graduationYear" th:field="*{graduationYear}">
+        </div>
+        <button type="submit">Submit</button>
     </form>
 </body>
 </html>
