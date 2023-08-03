@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+
+<body>
+<div th:fragment="top-bar">
+	<div class="title">You Got This!</div>
+	<div class="menu" >
+	    <a href="/login">Home</a>
+	    <a href="/survey">About You</a>
+	    <a href="/goals-survey">Goals</a>
+	    <a href="#">Resources</a>
+	    <a href="#">Account</a>
+    </div>
+    <!-- Add more menu items as needed -->
+</div>
+
+<div th:fragment="top-bar-unauth">
+	<div class="title">You Got This!</div>
+	<div class="menu" >
+		&nbsp;
+    </div>
+    <!-- Add more menu items as needed -->
+</div>
+
+</body>

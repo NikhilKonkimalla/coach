@@ -1,0 +1,96 @@
+/* styles.css */
+
+/* Set the background image */
+body {
+    background-image: url('../images/books.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    margin: 0;
+    padding: 0;
+}
+
+/* Create the light gray area in the middle */
+.container {
+    background-color: #f2f2f2;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 100%; /* Make the gray background fill the length of the page */
+    min-height: 800px;
+  	backdrop-filter: blur(5px); /* Frosted glass effect */
+  	background-color: rgba(255, 255, 255, 0.7); /* Adjust the alpha value for transparency */
+}
+
+.main-content {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+}
+
+.column {
+  flex: 1; /* Each column takes equal space */
+  padding: 10px;
+}
+
+/* Style the title */
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px 0;
+}
+
+/* Create the menu */
+.menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+}
+
+.menu a {
+    color: #fff;
+    text-decoration: none;
+    padding: 5px 10px;
+}
+
+.menu a:hover {
+    background-color: #555;
+}
+
+/* Style the main content */
+.main-content {
+    padding: 20px;
+}
+
+.form-group {
+     margin-bottom: 15px;
+ }
+
+
+
+ .form-group input {
+     padding: 10px;
+     border: 1px solid #ccc;
+     border-radius: 4px;
+ }
+
+ .form-group button {
+     display: block;
+     margin: 0 auto;
+     padding: 10px;
+     background-color: #007bff;
+     color: #fff;
+     border: none;
+     border-radius: 4px;
+     cursor: pointer;
+     align-items: center;
+ }
+
+ .links {
+     margin-top: 15px;
+     text-align: center;
+ }

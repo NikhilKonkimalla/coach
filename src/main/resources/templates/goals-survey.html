@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Goals</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="fragments :: top-bar"></div>
+            <h1>Submit Goals</h1>
+            <form th:action="@{/submit-goals}" method="post" class="login-container">
+                <div th:each="lookup, index : ${goals}">
+                    <div class="form-group">
+                        <input type="checkbox" th:field="${goals}" th:value="${lookup.goalName}" class="lookupCheckbox" />
+                        <label th:text="${lookup.goalName}"></label>
+                    </div>
+                    <div th:attr="data-name=${lookup.goalName}" class="monthsInput" style="display: none;">
+                        <label>Months:</label>
+                    </div>
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    <script>
+        $(document).ready(function () {
+            $(".lookupCheckbox").change(function () {
+                const lookupName = $(this).data("name");
+                const monthsInput = $(".monthsInput[data-name='" + lookupName + "']");
+
+                if ($(this).prop("checked")) {
+                    monthsInput.show();
+                } else {
+                    monthsInput.hide();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

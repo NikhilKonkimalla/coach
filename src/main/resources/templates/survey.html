@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Register New User</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body>
+<div class="container">
+
+   <div th:replace="fragments :: top-bar"></div>
+
+    <h1> What Motivates YOU</h1>
+    <form action="#" th:action="@{/survey-submit}" th:object="${survey}" method="post" class="login-container" >
+        <div class="form-group">
+            <p><label for="name">What drives you?</label> </p>
+            <input type="radio" id="drives1" name="drive" th:field="*{drive}" value="a" required>
+              <label for="drives1"> My desire to achieve my goals</label><br>
+            <input type="radio" id="drives2" name="drive" th:field="*{drive}" value="b" required>
+              <label for="drives2"> To support my family</label><br>
+            <input type="radio" id="drives3" name="drive" th:field="*{drive}" value="c" required>
+              <label for="drives3"> To be a role model</label><br>
+            <input type="radio" id="drives4" name="drive" th:field="*{drive}" value="d" required>
+              <label for="drives4">Pressure to excel (family, friends, yourself etc.)</label><br>
+        </div>
+        <div class="form-group">
+            <p><label for="name">When you feel unmotivated, what do you do?</label> </p>
+            <input type="radio" id="unmotivated1" name="unmotivated" th:field="*{unmotivated}" value="a" required>
+              <label for="unmotivated1"> Take a break and come back</label><br>
+            <input type="radio" id="unmotivated2" name="unmotivated" th:field="*{unmotivated}" value="b" required>
+              <label for="unmotivated2"> Think about why what I am doing is important to me</label><br>
+            <input type="radio" id="unmotivated3" name="unmotivated" th:field="*{unmotivated}" value="c" required>
+              <label for="unmotivated3"> Push through whatever block I have</label><br>
+            <input type="radio" id="unmotivated4" name="unmotivated" th:field="*{unmotivated}" value="d" required>
+              <label for="unmotivated4">Quit working</label><br>
+        </div>
+        <div class="form-group">
+            <p><label for="name">How strongly do you believe in yourself?</label> </p>
+            <input type="radio" id="belief1" name="belief" th:field="*{belief}" value="a" required>
+              <label for="belief1"> I strongly believe in my abilities</label><br>
+            <input type="radio" id="belief2" name="belief" th:field="*{belief}" value="b" required>
+              <label for="belief2"> I moderately believe in my abilities</label><br>
+            <input type="radio" id="belief3" name="belief" th:field="*{belief}" value="c" required>
+              <label for="belief3"> I don’t believe in my abilities</label><br>
+        </div>
+        <div class="form-group">
+            <p><label for="name">How important is having a clear sense of purpose in motivating you to study/learn?</label> </p>
+            <input type="radio" id="purpose1" name="purpose" th:field="*{purpose}" value="a" required>
+              <label for="purpose1">It is very important</label><br>
+            <input type="radio" id="purpose2" name="purpose" th:field="*{purpose}" value="b" required>
+              <label for="purpose2">It doesn't play a significant role in my motivation.</label><br>
+            <input type="radio" id="purpose3" name="purpose" th:field="*{purpose}" value="c" required>
+              <label for="purpose3">It depends on the subject I am learning</label><br>
+            <input type="radio" id="purpose4" name="purpose" th:field="*{purpose}" value="d" required>
+              <label for="purpose4">I'm unsure about the importance of having a sense of purpose.</label><br>
+        </div>
+        <div class="form-group">
+            <p><label for="name">What impact do past successes have on your motivation?</label> </p>
+            <input type="radio" id="drives1" name="success" th:field="*{success}" value="a" required>
+              <label for="success1">Past successes boost my confidence </label><br>
+            <input type="radio" id="drives2" name="success" th:field="*{success}" value="b" required>
+              <label for="success2">I feel pressure to consistently replicate past achievements.</label><br>
+            <input type="radio" id="drives3" name="success" th:field="*{success}" value="c" required>
+              <label for="success3">Past successes have little impact on my motivation.</label><br>
+        </div>
+        
+        <div class="form-group">
+            <p><label for="name">How do you respond to setbacks?</label> </p>
+            <input type="radio" id="setbacks1" name="setback" th:field="*{setback}" value="a" required>
+              <label for="setbacks1">I view them as learning opportunities</label><br>
+            <input type="radio" id="setbacks2" name="setback" th:field="*{setback}" value="b" required>
+              <label for="setbacks2">I feel discouraged</label><br>
+        </div>     
+        <div class="form-group">
+            <p><label for="name">In what environment do you best perform?</label> </p>
+            <input type="radio" id="environments1" name="environment" th:field="*{environment}" value="a" required>
+              <label for="environments1">By myself, focused</label><br>
+            <input type="radio" id="environments2" name="environment" th:field="*{environment}" value="b" required>
+              <label for="environments2">With a group of people who share my goal</label><br>
+            <input type="radio" id="environments3" name="environment" th:field="*{environment}" value="c" required>
+              <label for="environments3">With any group of people</label><br>
+            <input type="radio" id="environments4" name="environment" th:field="*{environment}" value="d" required>
+              <label for="environments4">In a public setting (library, coffee shop) etc. </label><br>
+        </div>
+         <div class="form-group">
+            <p><label for="name">What distracts you from your goals the most?</label> </p>
+            <input type="radio" id="distracts1" name="distract" th:field="*{distract}" value="a" required>
+              <label for="distracts1">Myself/overthinking</label><br>
+            <input type="radio" id="distracts2" name="distract" th:field="*{distract}" value="b" required>
+              <label for="distracts2">My phone/other electronics</label><br>
+            <input type="radio" id="distracts3" name="distract" th:field="*{distract}" value="c" required>
+              <label for="distracts3">Other people/bad influences</label><br>
+            <input type="radio" id="distracts4" name="distract" th:field="*{distract}" value="d" required>
+              <label for="distracts4">School/Extracurriculars not related to my goal</label><br>
+            <input type="radio" id="distracts5" name="distract" th:field="*{distract}" value="d" required>
+              <label for="distracts5">other responsibilities</label><br>
+        </div>
+
+        <div class="form-group">
+            <p><label for="name">What helps you most when face a setback?</label> </p>
+            <input type="radio" id="helps1" name="help" th:field="*{help}" value="a" required>
+              <label for="helps1"> Take a break from work</label><br>
+            <input type="radio" id="helps2" name="help" th:field="*{help}" value="b" required>
+              <label for="helps2">Talk to a friend</label><br>
+            <input type="radio" id="helps3" name="help" th:field="*{help}" value="c" required>
+              <label for="helps3">Speak to a coach or a teacher</label><br>
+            <input type="radio" id="helps4" name="help" th:field="*{help}" value="d" required>
+              <label for="helps4">Focus on the next goal</label><br>
+        </div>
+        
+        <button type="submit">Submit</button>
+    </form>
+ </div>
+</body>
+</html>

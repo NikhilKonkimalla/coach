@@ -1,29 +1,70 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Login</title>
+    <title>Login Page</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
 </head>
 <body>
-    <h1>Login</h1>
-    <div th:if="${error}">
-        <p>Invalid username or password.</p>
-    </div>
-    <form method="post" th:action="@{/login}">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required autofocus>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <button type="submit">Login</button>
-    </form>
-    <!-- Add the following lines after the login form -->
-	<div>
-	    <a th:href="@{/register}">Create User</a>
+    <div class="container">
+    	<div th:replace="fragments :: top-bar-unauth"></div>
+        <div class="main-content">
+        <div class="column" align="center"> 
+       <section id="hero-section">
+            <h1>Welcome to YourCoach - Your Motivation Booster!</h1>
+            <p>Are you ready to unlock your true potential and embark on a journey of success? Look no further! YourCoach is the ultimate companion for high school students who are determined to stay motivated, set meaningful goals, and achieve remarkable accomplishments.</p>
+        </section>
+
+        <section id="features-section">
+            <h2>Here's how YourCoach will empower you:</h2>
+            <ul>
+                <li><strong>Goal Setting Made Simple:</strong> Take control of your future by defining clear and achievable goals. Our app will guide you through the process of setting targets that align with your passions and aspirations.</li>
+                <li><strong>Personalized Behavior Theory:</strong> We've harnessed the power of behavior theory to create a personalized motivational experience just for you. The app will analyze your progress and preferences, providing tailored prompts and encouragement to keep you inspired and on track.</li>
+                <li><strong>Daily Dose of Encouragement:</strong> Start your day with a burst of inspiration! Every morning, you'll receive a carefully crafted motivational message that sets the tone for your day and reminds you of the greatness you can achieve.</li>
+                <li><strong>Track Your Progress:</strong> Watch yourself grow and thrive as you record your achievements and milestones. Our intuitive tracking system will help you see how far you've come, reinforcing your motivation to keep pushing forward.</li>
+                <li><strong>Community Support:</strong> Connect with like-minded high school students who share your drive and determination. Share your success stories, offer support, and celebrate each other's victories in our thriving community.</li>
+                <li><strong>Rewards and Incentives:</strong> We believe in celebrating every step of your journey! Earn badges, rewards, and special incentives as you reach significant milestones, making your pursuit of greatness even more enjoyable.</li>
+                <li><strong>Expert Tips and Resources:</strong> Access a treasure trove of valuable resources, including study tips, time management techniques, and expert advice to optimize your performance and reach your potential.</li>
+            </ul>
+        </section>
+
+        <section id="cta-section">
+            <h2>Remember, success is not a destination; it's a journey.</h2>
+            <p>With YourCoach, you'll stay motivated, remain focused, and embrace the challenges that come your way. Together, we'll turn your dreams into realities!</p>
+            <h3>Join our growing community of ambitious high school students today and take the first step towards an empowered future. Sign up now and embark on the path to success with YourCoach. The world is waiting for your greatness!</h3>
+            <a href="/register" class="cta-button">Sign up today for a brighter tomorrow!</a>
+        </section>
+
+Next tasks 
+        2) Do the JPA mapping for Survey and Goals
+        3) Create the page to display and edit goals
+        4) Create some content to display how to prepare for each goals (when is a good time to start, how much prep is required)
+        5) create a script that reads the database and sends out text messages or email based on goals and timelines
+        6) Where and how to deploy the application
+        7) Link this to kids circle </div>
+        <div class="column" align="center">
+            <h2>Login</h2>
+            <div th:if="${error}">
+		        <p>Invalid username or password.</p>
+		    </div>
+            <form action="/login" method="post">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div class="links">
+                <a href="/register">Register New User</a> <br>
+                <a href="/forgot-password">Forgot Password</a>
+                	    <a th:href="@{/register}">Create User</a>
 	    <a th:href="@{/forgot-password}">Forgot Password</a>
-	</div>
-    
+            </div>
+        </div>
+        </div>
+    </div>
 </body>
 </html>
