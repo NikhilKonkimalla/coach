@@ -5,7 +5,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
+import org.kidscircle.coach.db.GoalRepository;
+import org.kidscircle.coach.db.GoalService;
+import org.kidscircle.coach.db.SurveyRepository;
+import org.kidscircle.coach.db.UserRepository;
 import org.kidscircle.coach.db.UserService;
 import org.kidscircle.coach.model.*;
 import org.slf4j.Logger;
@@ -15,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -36,7 +42,12 @@ import com.oracle.tools.packager.Log;
 public class MainController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
-	 @Autowired private UserService userService;
+	 
+	@Autowired private UserRepository userRepository;
+	@Autowired private SurveyRepository surveyRepository;
+	@Autowired private GoalService goalService;
+
+	 
 	
 
 	@GetMapping("/greeting")
@@ -53,31 +64,34 @@ public class MainController {
 		return "login";
 	}
 	
+	@GetMapping("/error")
+	public String error() {
+  	logger.info("This is an info message");
+  	logger.debug("This is a debug message");
+  	logger.error("This is an error message");
+		return "login";
+	}
 
 
   @PostMapping("/login")
-  public String authenticate(@RequestParam("username") String username,
+  public String authenticate(@RequestParam("username") String userName,
                              @RequestParam("password") String password,
                              Model model,
-                             HttpServletRequest request) {
+                             HttpSession session) {
       try {
-      	logger.info("This is an info message");
-      	logger.debug("This is a debug message");
-      	logger.error("This is an error message");
-      	logger.error("Hello Word" + username+password);
-      	//Get user from db
-      	
-      	//Save user in session
-      	
-      	//If this user has not answered the behavior questioonaire, send to questionnaire fill
-      	
-      	
-      	//If the user has not set goals, redirect to goal setting page
-      	
-      	//Redirect to current goals page
 
-         //return "redirect:/greeting?name="+username;
-      	return "redirect:/goals-survey";
+      	logger.error("Hello Word" + userName+password);
+      	//Get user from db
+        User u = userRepository.findUserByUserName(userName);
+        if( !u.getPassword().equals(password))
+        {
+            model.addAttribute("error", true);
+            return "login";
+        }
+      	//Save user in session	
+        session.setAttribute("user", u);
+
+      	return "redirect:/goals";
       } catch (Exception e) {
           model.addAttribute("error", true);
           return "login";
@@ -92,44 +106,93 @@ public class MainController {
   }
 
   @PostMapping("/register-submit")
-  public String submitStudentForm(Model model, @ModelAttribute User user) {
+  public String submitStudentForm(HttpSession session, Model model, @ModelAttribute User user) {
       // Process the submitted form data (e.g., save to a database, send an email, etc.)
       System.out.println(user);
-      userService.saveUser(user);
+      //user.getSurvey().setU
+      
+      userRepository.save(user);
+      //userRepository.
       // Redirect to the form page after processing
+      session.setAttribute("user", user);
       return "redirect:/survey";
   }
   
   
-  @GetMapping("/goals-survey")
-  public String showGoals(Model model) {
-      return "goals-survey";
-  }
+
   
-  @SuppressWarnings("unchecked")
-  @PostMapping("/submit-goals")
-  public String submitGoals(@ModelAttribute("goals") ArrayList<Goal> goals) {
-      // Save the survey to the database using the SurveyRepository
-	  //Get current user from session
-	  //add survey to user
-	  //save the user
-	  //userService.save(user);
-	  //List<Goal> goals = (List<Goal>) model.getAttribute("goals");
-	  logger.info("Hello Word" +goals.toString());
-      return "redirect:/greeting?name=whatever"; // Redirect to a thank-you page or any other page you prefer
-  }
   
   @GetMapping("/survey")
-  public String survey(Model model) {
-      model.addAttribute("survey", new Survey());
+  public String survey(HttpSession session, Model model) {
+	  //See if a survey is done for this user?
+	  User user = (User) session.getAttribute("user");
+	  Survey s = new Survey();
+	  s.setUserId(user.getUserId());
+	  model.addAttribute("survey", s);
       return "survey";
   }
   
   @PostMapping("/survey-submit")
-  public String submitSurvey(Model model, @ModelAttribute Survey s) {
+  public String submitSurvey(HttpSession session, Model model, @ModelAttribute Survey s) {
 	  logger.info(s.getDrive());
-	  return "redirect:/greeting?name=whatever" + s.getDrive();
+	  User user = (User) session.getAttribute("user");
+	  s.setUserId(user.getUserId());
+	  surveyRepository.save(s);
+	  return "redirect:/goals";
   }
+  
+  @GetMapping("/goals")
+  public String showGoals(HttpSession session, Model model) {
+	  User user = (User) session.getAttribute("user");
+	  //Get all goals for this user
+	  List<Goal> goals = goalService.getGoalForUser(user.getUserId());
+	  if( goals.isEmpty())
+	  {
+	      goals.add(new Goal("ACT"));
+	      goals.add(new Goal("SAT"));
+	      goals.add(new Goal("SomeThing Else"));
+	  }
+	  model.addAttribute("goals", goals); 
+	  System.out.println(goals);
+      return "goals";
+  }
+  
+  @GetMapping("/showNewGoalForm")
+  public String showNewGoalForm(Model model) {
+      // create model attribute to bind form data
+      Goal goal = new Goal();
+      model.addAttribute("goal", goal);
+      return "new_goal";
+  }
+  
+  @PostMapping("/saveGoal")
+  public String saveGoal(HttpSession session,@ModelAttribute("Goal") Goal goal) {
+      // save Goal to database
+	  User user = (User) session.getAttribute("user");
+	  goal.setUserId(user.getUserId());
+      goalService.saveGoal(goal);
+      return "redirect:/goals";
+  }
+
+  @GetMapping("/showFormForUpdate/{id}")
+  public String showFormForUpdate(@PathVariable(value = "id") long id, Model model) {
+      // get Goal from the service
+      Goal goal = (Goal) goalService.getGoalById(id);
+      
+
+      // set Goal as a model attribute to pre-populate the form
+      model.addAttribute("goal", goal);
+      return "update_Goal";
+  }
+
+  @GetMapping("/deleteGoal/{id}")
+  public String deleteGoal(@PathVariable(value = "id") long id) {
+
+      // call delete Goal method 
+      this.goalService.deleteGoalById(id);
+      return "redirect:/goals";
+  }
+  
   
   @ModelAttribute("potentialGoals")
   public List<PotentialGoal> getPotentialGoals()
@@ -140,14 +203,5 @@ public class MainController {
 	  return potentialGoals;
   }
   
-  @ModelAttribute("goals")
-  public List<Goal> getGoals()
-  {
-	  List<Goal> goals = new ArrayList<Goal>();
-      goals.add(new Goal("ACT"));
-      goals.add(new Goal("SAT"));
-      goals.add(new Goal("SomeThing Else"));
-	  return goals;
-  }
 
 }

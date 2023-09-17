@@ -1,16 +1,27 @@
 package org.kidscircle.coach.model;
 
 
-import java.util.Date;
-
 import javax.persistence.*;
 
+/*
+ * CREATE TABLE goal (
+    id INTEGER PRIMARY KEY,
+    user_name TEXT,
+    goal_name TEXT NOT NULL,
+    goal_importance TEXT,
+    month_number INTEGER,
+    prep_start_months INTEGER)
+    
+ */
 @Entity
 public class Goal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long goalId;
+    
+    private Long userId;
+    
     
     public String goalName;
     public String goalImportance;
@@ -26,12 +37,20 @@ public class Goal {
     	this.goalName = name;
     }
 
-	public Long getId() {
-		return id;
+	public Long getGoalId() {
+		return goalId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setGoalId(Long id) {
+		this.goalId = id;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 	public String getGoalName() {

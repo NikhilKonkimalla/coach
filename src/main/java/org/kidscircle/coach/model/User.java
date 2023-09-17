@@ -1,18 +1,29 @@
 package org.kidscircle.coach.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import java.util.List;
+import java.util.ArrayList;
+
+/*CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, password TEXT, email TEXT,  graduation_year NUMBER, phone_number NUMBER, preferred_communication TEXT, user_name TEXT);*/
+
+
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 public class User {
 	
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
     
     private String name;
     private String userName;
@@ -22,6 +33,13 @@ public class User {
     private String preferredCommunication;
     private String graduationYear;
     
+    
+	public Long getUserId() {
+		return userId;
+	}
+	public void setUserId(Long id) {
+		this.userId = id;
+	}
 	public String getName() {
 		return name;
 	}

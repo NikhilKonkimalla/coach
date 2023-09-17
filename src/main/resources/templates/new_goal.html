@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="fragments :: top-bar"></div>
+            <h1>Set Your Goals!</h1>
+            <form th:action="@{/saveGoal}" th:object="${goal}" method="post" class="login-container">
+                 <div class="form-group">
+                     <label th:text="${goal.goalName}"></label>
+                 </div>
+                <div class="form-group">
+		            <label for="goalName">Give your goal a name:</label>
+		            <input type="text" id="goalName" th:field="*{goalName}" required>
+		        </div>
+		        <div class="form-group">
+		            <label for="goalImportance">Why is this goal important to you:</label>
+		            <input type="text" id="goalImportance" th:field="*{goalImportance}" required>
+		        </div>
+		        <div class="form-group">
+		            <label for="monthNumber">By when do you want to achieve this goal:</label>
+		            <input type="text" id="monthNumber" th:field="*{monthNumber}" required>
+		        </div>
+		        <div class="form-group">
+		            <label for="prepStartMonths">How many months ahead do you think you should start preparing for this goal:</label>
+		            <input type="text" id="prepStartMonths" th:field="*{prepStartMonths}" required>
+		        </div>
+                 
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+</body>
+</html>
+

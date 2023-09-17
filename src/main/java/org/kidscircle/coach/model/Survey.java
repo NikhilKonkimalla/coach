@@ -6,14 +6,31 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/*
+ * CREATE TABLE survey (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_name TEXT,
+    drive TEXT,
+    unmotivated TEXT,
+    belief TEXT,
+    purpose TEXT,
+    success TEXT,
+    setback TEXT,
+    environment TEXT,
+    distract TEXT,
+    help TEXT);
+ */
+
 @Entity
 @Table(name = "survey")
 public class Survey {
 	
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-	
+    private Long surveyId;
+    
+    private Long userId;
+    
     /*
 	What drives you?
 			My desire to achieve my goals
@@ -93,6 +110,22 @@ public class Survey {
 		Focus on the next goal
 	*/
     private String help;
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public Long getSurveyId() {
+		return surveyId;
+	}
+
+	public void setSurveyId(Long id) {
+		this.surveyId = id;
+	}
 
 	public String getDrive() {
 		return drive;

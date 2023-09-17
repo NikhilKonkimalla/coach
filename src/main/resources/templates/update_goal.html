@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="fragments :: top-bar"></div>
+            <h1>Update Goal</h1>
+            <form th:action="@{/saveGoal}" th:object="${goal}" method="post" class="login-container">
+		        
+		                    <!-- Add hidden form field to handle update -->
+            <input type="hidden" th:field="*{goalId}" />
+
+            <input type="text" th:field="*{goalName}" class="form-control mb-4 col-4">
+
+            <input type="text" th:field="*{goalImportance}" class="form-control mb-4 col-4">
+
+            <input type="text" th:field="*{monthNumber}" class="form-control mb-4 col-4">
+            
+            <input type="text" th:field="*{prepStartMonths}" class="form-control mb-4 col-4">
+
+                 
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+</body>
+</html>
+
