@@ -14,32 +14,46 @@
 	    <h1> Register New User</h1>
 	    <form action="#" th:action="@{/register-submit}" th:object="${user}" method="post" class="login-container" >
 	        <div class="form-group">
-	            <label for="name">Name:</label>
+	            <label for="name">Name:</label> <br>
 	            <input type="text" id="name" th:field="*{name}" required>
 	        </div>
 	        <div class="form-group">
-	            <label for="userName">User Name:</label>
+	            <label for="userName">User Name:</label> <br>
 	            <input type="text" id="userName" th:field="*{userName}" required>
 	        </div>
 	        <div class="form-group">
-	            <label for="password">Password:</label>
+	            <label for="password">Password:</label> <br>
 	            <input type="text" id="password" th:field="*{password}" required>
 	        </div>
 	        <div class="form-group">
-	            <label for="email">Email:</label>
+	            <label for="email">Email:</label> <br>
 	            <input type="email" id="email" th:field="*{email}" required>
 	        </div>
 	        <div class="form-group">
-	            <label for="text">Phone Number:</label>
+	            <label for="text">Phone Number:</label> <br>
 	            <input type="text" id="text" th:field="*{phoneNumber}">
 	        </div>
 	        <div class="form-group">
-	            <label for="preferredCommunication">Preferred Way to Communicate:</label>
-	            <input type="text" id="preferredCommunication" th:field="*{preferredCommunication}">
+	            <label>Preferred Way to Communicate:</label><br>
+	            <input type="radio" id="email" th:field="*{preferredCommunication}" value="email"> 
+	            <label for="email">Email</label><br>
+	            <input type="radio" id="text" th:field="*{preferredCommunication}" value="text"> 
+	            <label for="text">Text</label>
 	        </div>
-	        <div class="form-group">
-	            <label for="graduationYear">Graduation Year:</label>
-	            <input type="text" id="graduationYear" th:field="*{graduationYear}">
+	        <div class="form-group"> <br>
+	            <label for="graduationYear">Graduation Year:</label> <br>
+	            <select  id="graduationYear" th:field="*{graduationYear}">
+				    <option value=" ">Year</option>
+				    <option value="2022">2022</option>
+				    <option value="2023">2023</option>
+				    <option value="2024">2024</option>
+				    <option value="2025">2025</option>
+				    <option value="2026">2026</option>
+				    <option value="2027">2027</option>
+				    <option value="2028">2028</option>
+				    <option value="2029">2029</option>
+				    <option value="2030">2030</option>
+				</select>
 	        </div>
 	        <button type="submit">Submit</button>
 	    </form>

@@ -56,7 +56,8 @@ public class MainController {
 		return "greeting";
 	}
 	
-	@GetMapping("/login")
+	//@GetMapping("/login")
+	@GetMapping(value = {"/", "/login"})
 	public String login() {
   	logger.info("This is an info message");
   	logger.debug("This is a debug message");

@@ -34,13 +34,7 @@
             <a href="/register" class="cta-button">Sign up today for a brighter tomorrow!</a>
         </section>
 
-Next tasks 
-        2) Do the JPA mapping for Survey and Goals
-        3) Create the page to display and edit goals
-        4) Create some content to display how to prepare for each goals (when is a good time to start, how much prep is required)
-        5) create a script that reads the database and sends out text messages or email based on goals and timelines
-        6) Where and how to deploy the application
-        7) Link this to kids circle </div>
+		</div>
         <div class="column" align="center">
             <h2>Login</h2>
             <div th:if="${error}">
@@ -58,10 +52,9 @@ Next tasks
                 <button type="submit">Login</button>
             </form>
             <div class="links">
-                <a href="/register">Register New User</a> <br>
+                <a href="/register">Register</a> 
+                <br>
                 <a href="/forgot-password">Forgot Password</a>
-                	    <a th:href="@{/register}">Create User</a>
-	    <a th:href="@{/forgot-password}">Forgot Password</a>
             </div>
         </div>
         </div>

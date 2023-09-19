@@ -10,10 +10,9 @@
 	</parent>
 	<groupId>org.kidscircle</groupId>
 	<artifactId>coach</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>coach</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Your Coach</description>
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
@@ -79,6 +78,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>coach</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
