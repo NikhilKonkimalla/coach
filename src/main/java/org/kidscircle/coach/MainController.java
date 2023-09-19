@@ -147,12 +147,6 @@ public class MainController {
 	  User user = (User) session.getAttribute("user");
 	  //Get all goals for this user
 	  List<Goal> goals = goalService.getGoalForUser(user.getUserId());
-	  if( goals.isEmpty())
-	  {
-	      goals.add(new Goal("ACT"));
-	      goals.add(new Goal("SAT"));
-	      goals.add(new Goal("SomeThing Else"));
-	  }
 	  model.addAttribute("goals", goals); 
 	  System.out.println(goals);
       return "goals";
@@ -194,6 +188,10 @@ public class MainController {
       return "redirect:/goals";
   }
   
+  @GetMapping("/resources")
+  public String resources(Model model) {
+      return "resources";
+  }
   
   @ModelAttribute("potentialGoals")
   public List<PotentialGoal> getPotentialGoals()

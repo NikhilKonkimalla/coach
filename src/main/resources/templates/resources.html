@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Register New User</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body>
+<div class="container">
+
+   <div th:replace="fragments :: top-bar"></div>
+
+    <h1> Resources & Tips</h1>
+        <div class="main-content">
+            <div class="column">
+                <h2>Goal Setting</h2>
+                <ul>
+                    <li><a href="#">How to Set Achievable Goals</a></li>
+                    <li><a href="#">Why Goals Fail and How to Make Them Succeed</a></li>
+                    <li><a href="#">Using SMART Goals to Be More Effective</a></li>
+                </ul>
+            </div>
+            <div class="column">
+                <h2>Time Management</h2>
+                <ul>
+                    <li><a href="#">Mastering the Pomodoro Technique</a></li>
+                    <li><a href="#">Effective Study Routines</a></li>
+                    <li><a href="#">Avoiding Procrastination</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="links">
+            For more information, visit our <a href="#">FAQ</a> or <a href="#">Contact Us</a>.
+        </div>
+    </div>
+</body>
+</html>

@@ -2,31 +2,76 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Create</title>
+    <title>Update Goal</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="container">
         <div th:replace="fragments :: top-bar"></div>
-            <h1>Update Goal</h1>
-            <form th:action="@{/saveGoal}" th:object="${goal}" method="post" class="login-container">
-		        
-		                    <!-- Add hidden form field to handle update -->
-            <input type="hidden" th:field="*{goalId}" />
+        <h2>Update Your Goals!</h2>
+		<p>Life is dynamic and so are your goals. Use this form to modify your objectives. Consider whether your initial timeline was realistic, whether your motivations have changed, or if you've encountered unforeseen obstacles. </p>
 
-            <input type="text" th:field="*{goalName}" class="form-control mb-4 col-4">
+        <form th:action="@{/saveGoal}" th:object="${goal}" method="post" class="login-container">
+        	 <input type="hidden" th:field="*{goalId}"/>
+             <div class="form-group">
+                 <label th:text="${goal.goalName}"></label>
+             </div>
+            <div class="form-group">
+                <label for="goalName">Update the name of your goal:</label> <br>
+                <p class="help-text">Has the core essence of your goal changed? If so, consider renaming it to align with your current vision.</p>
+                <input type="text" id="goalName" th:field="*{goalName}" required>
+            </div>
+            <div class="form-group">
+                <label for="goalImportance">Update why this goal is important to you:</label> <br>
+                <p class="help-text">Reassess your motivations. Are they still compelling? Should you pivot or recalibrate your intentions?</p>
+                <input type="text" id="goalImportance" th:field="*{goalImportance}" required>
+            </div>
+            <div class="form-group">
+                <label>Update your deadline:</label> <br>
+                <p class="help-text">Review your initial timeline. Do you need to grant yourself more time or has urgency increased?</p>
+                <div class="form-group">
+				    <label>Update your deadline - Year:</label> <br>
+				    <select id="year" th:field="*{year}" th:selected="${year}" required>
+					    <option value="2022">2022</option>
+					    <option value="2023">2023</option>
+					    <option value="2024">2024</option>
+					    <option value="2025">2025</option>
+					    <option value="2026">2026</option>
+					    <option value="2027">2027</option>
+					    <option value="2028">2028</option>
+					    <option value="2029">2029</option>
+					    <option value="2030">2030</option>
+				    </select>
+				</div>
+				
+				<!-- Month Dropdown -->
+				<div class="form-group">
+				    <label>Update your deadline - Month:</label> <br>
+				    <select id="month" th:field="*{monthNumber}" th:selected="${monthNumber}" required>
+					    <option value="1">January</option>
+					    <option value="1">February</option>
+					    <option value="03">March</option>
+					    <option value="04">April</option>
+					    <option value="05">May</option>
+					    <option value="06">June</option>
+					    <option value="07">July</option>
+					    <option value="08">August</option>
+					    <option value="09">September</option>
+					    <option value="10">October</option>
+					    <option value="11">November</option>
+					    <option value="12">December</option>
+				    </select>
+				</div>
+            </div>
+            <div class="form-group">
+                <label for="prepStartMonths">Update your preparation timeline:</label> <br>
+                <p class="help-text">Based on your progress or setbacks, you may need to adjust how much time you allocate for preparation.</p>
+                <input type="text" id="prepStartMonths" th:field="*{prepStartMonths}" required>
+            </div>
 
-            <input type="text" th:field="*{goalImportance}" class="form-control mb-4 col-4">
-
-            <input type="text" th:field="*{monthNumber}" class="form-control mb-4 col-4">
-            
-            <input type="text" th:field="*{prepStartMonths}" class="form-control mb-4 col-4">
-
-                 
-                <button type="submit">Submit</button>
-            </form>
-        </div>
+            <button type="submit">Update</button>
+        </form>
+    </div>
 </body>
 </html>
-

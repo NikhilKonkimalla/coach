@@ -9,15 +9,35 @@
 <body>
     <div class="container">
         <div th:replace="fragments :: top-bar"></div>
-            <h1>Set Your Goals!</h1>
-                    <a th:href="@{/showNewGoalForm}" class="btn btn-primary form-group"> Add Goal </a>
+	    <section class="goal-dashboard-intro">
+	        <h2>Welcome to Your Goal Dashboard!</h2>
+	        <p>The Goal Dashboard is your hub for tracking, evaluating, and managing your life ambitions. Below, you will find a comprehensive list of all the goals you've set, along with pertinent details such as their importance, targeted completion date, and preparation timeline.</p>
+	
+	        <h3>Why Tracking is Essential:</h3>
+	        <p>Keeping track of your goals is crucial for several reasons. Not only does it serve as a constant reminder of what you're striving to achieve, but it also provides a straightforward way to measure your progress. The act of tracking itself can serve as a catalyst for the productivity required to reach your objectives.</p>
+	
+	        <h3>How to Utilize This Dashboard:</h3>
+	        <ul>
+	            <li><strong>Update:</strong> Your goals aren't static. Life changes and so should your objectives. Use the 'Update' button next to each goal to modify details as needed.</li>
+	            <li><strong>Delete:</strong> It's okay to let go of goals that are no longer relevant or attainable. Simply hit 'Delete' next to any goal you wish to remove.</li>
+	            <li><strong>Reflect:</strong> Take a moment to reflect on your listed goals regularly. Are you making the progress you hoped for? If not, consider revisiting your strategies or timelines.</li>
+	        </ul>
+	
+	        <h3>Next Steps:</h3>
+	        <p>If you're ready to add a new goal, click on 'Add Goal' at the top of the page. The more specific and actionable your goals are, the more likely you are to achieve them. Therefore, take the time to think through each new goal carefully.</p>
+	
+	        <p>Remember, a goal without a plan is just a wish. Make your goals work for you by actively managing them here.</p>
+	    </section>
+
+            
+         <a th:href="@{/showNewGoalForm}" class="btn btn-primary form-group"> Add Goal </a>
                     
             <table border="1" class="table">
             <thead>
                 <tr>
                     <th>Goal Name</th>
                     <th>Goal Importance</th>
-                    <th>Month Number</th>
+                    <th>Target Date</th>
                     <th>Prep Start Months </th>
                     <th>Actions </th>
                 </tr>
@@ -26,7 +46,23 @@
                 <tr th:each="goal : ${goals}">
                     <td th:text="${goal.goalName}"></td>
                     <td th:text="${goal.goalImportance}"></td>
-                    <td th:text="${goal.monthNumber}"></td>
+                    <td>
+                      <span th:switch="${goal.monthNumber}">
+					    <span th:case="1">January</span>
+					    <span th:case="2">February</span>
+					    <span th:case="3">March</span>
+					    <span th:case="4">April</span>
+					    <span th:case="5">May</span>
+					    <span th:case="6">June</span>
+					    <span th:case="7">July</span>
+					    <span th:case="8">August</span>
+					    <span th:case="9">September</span>
+					    <span th:case="10">October</span>
+					    <span th:case="11">November</span>
+					    <span th:case="12">December</span>
+					  </span>, 
+					  <span th:text="${goal.year}"></span>            
+                    </td>
                     <td th:text="${goal.prepStartMonths}"></td>
                     <td> 
 	                    <a th:href="@{/showFormForUpdate/{id}(id=${goal.goalId})}" class="btn btn-primary">Update</a>

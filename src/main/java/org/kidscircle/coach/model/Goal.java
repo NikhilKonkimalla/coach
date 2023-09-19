@@ -26,6 +26,7 @@ public class Goal {
     public String goalName;
     public String goalImportance;
     public int monthNumber;
+    public int year;
     public int prepStartMonths;
 
     // Constructors, getters, and setters
@@ -77,6 +78,14 @@ public class Goal {
 
 	public void setMonthNumber(int monthNumber) {
 		this.monthNumber = monthNumber;
+	}
+
+	public int getYear() {
+		return year;
+	}
+
+	public void setYear(int year) {
+		this.year = year;
 	}
 
 	public int getPrepStartMonths() {

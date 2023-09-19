@@ -153,4 +153,14 @@ body {
     color: #fff;
 }
 
+
+.help-text {
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    padding-left: 3px;
+    font-style: italic;
+}
+
  
