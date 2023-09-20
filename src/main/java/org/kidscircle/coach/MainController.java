@@ -177,7 +177,7 @@ public class MainController {
 
       // set Goal as a model attribute to pre-populate the form
       model.addAttribute("goal", goal);
-      return "update_Goal";
+      return "update_goal";
   }
 
   @GetMapping("/deleteGoal/{id}")
