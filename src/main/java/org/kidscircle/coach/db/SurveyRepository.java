@@ -8,5 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface SurveyRepository extends CrudRepository<Survey, Long>{
 	
+	@Query( "select s from Survey s where s.userId = :userId" )
+	public Survey findSurveyByUserId(@Param("userId") long userId);
 
 }

@@ -2,16 +2,9 @@ package org.kidscircle.coach;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
-
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.kidscircle.coach.db.GoalRepository;
-import org.kidscircle.coach.db.GoalService;
-import org.kidscircle.coach.db.SurveyRepository;
-import org.kidscircle.coach.db.UserRepository;
-import org.kidscircle.coach.db.UserService;
+import org.kidscircle.coach.db.*;
 import org.kidscircle.coach.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.oracle.tools.packager.Log;
 
 /*
  * Login - user security
@@ -44,7 +36,7 @@ public class MainController {
 	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 	 
 	@Autowired private UserRepository userRepository;
-	@Autowired private SurveyRepository surveyRepository;
+	@Autowired private SurveyRepository surveyService;
 	@Autowired private GoalService goalService;
 
 	 
@@ -119,15 +111,15 @@ public class MainController {
       return "redirect:/survey";
   }
   
-  
-
-  
+ 
   
   @GetMapping("/survey")
   public String survey(HttpSession session, Model model) {
 	  //See if a survey is done for this user?
 	  User user = (User) session.getAttribute("user");
-	  Survey s = new Survey();
+	  Survey s = surveyService.findSurveyByUserId(user.getUserId());
+	  if ( s == null)
+		  s = new Survey();
 	  s.setUserId(user.getUserId());
 	  model.addAttribute("survey", s);
       return "survey";
@@ -138,7 +130,7 @@ public class MainController {
 	  logger.info(s.getDrive());
 	  User user = (User) session.getAttribute("user");
 	  s.setUserId(user.getUserId());
-	  surveyRepository.save(s);
+	  surveyService.save(s);
 	  return "redirect:/goals";
   }
   
