@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body>
+<div class="container">
+    <div th:replace="fragments :: top-bar"></div>
+
+    <div class="calendar-header">
+        <a th:href="@{/calendar(year=${prevYear},month=${prevMonth})}" class="btn btn-primary cal-nav">&lsaquo;</a>
+        <h2 th:text="${monthName + ' ' + year}"></h2>
+        <a th:href="@{/calendar(year=${nextYear},month=${nextMonth})}" class="btn btn-primary cal-nav">&rsaquo;</a>
+    </div>
+
+    <table class="calendar-table">
+        <thead>
+            <tr>
+                <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="week : ${weeks}">
+                <td th:each="day : ${week}"
+                    th:classappend="${day == 0 ? 'cal-empty' : (day == todayDay and year == todayYear and month == todayMonth ? 'cal-today' : '')}">
+                    <div th:if="${day != 0}">
+                        <span class="cal-day-num" th:text="${day}"></span>
+                        <ul class="cal-tasks" th:if="${tasksByDay[day] != null}">
+                            <li th:each="task : ${tasksByDay[day]}" class="cal-task-item">
+                                <span th:text="${task.taskName}"></span>
+                                <span th:if="${goalNames[task.goalId] != null}"
+                                      class="cal-goal-label"
+                                      th:text="${'(' + goalNames[task.goalId] + ')'}"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="calendar-footer">
+        <a th:href="@{/goals}" class="btn btn-primary">Manage Goals &amp; Tasks</a>
+    </div>
+</div>
+</body>
+</html>
