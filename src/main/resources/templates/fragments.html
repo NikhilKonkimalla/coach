@@ -1,28 +1,96 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-</head>
-
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head></head>
 <body>
-<div th:fragment="top-bar">
-	<div class="title">Your Coach!</div>
-	<div class="menu" >
-	    <a href="/calendar">Home</a>
-	    <a href="/survey">About You</a>
-	    <a href="/goals">Goals</a>
-	    <a href="/calendar">Calendar</a>
-	    <a href="/resources">Resources</a>
-	    <a href="#">Account</a>
+
+<!-- ── Authenticated top navigation ─────────────────────── -->
+<nav th:fragment="nav" class="coach-nav">
+    <div class="nav-brand">
+        <a href="/dashboard" class="nav-logo">Coach</a>
     </div>
-    <!-- Add more menu items as needed -->
+    <ul class="nav-links">
+        <li><a href="/today"     class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/today'} ? 'active'">Today</a></li>
+        <li><a href="/goals"     class="nav-link" th:classappend="${#httpServletRequest.requestURI.startsWith('/goal')} ? 'active'">Goals</a></li>
+        <li><a href="/week"      class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/week'} ? 'active'">This Week</a></li>
+        <li><a href="/calendar"  class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/calendar'} ? 'active'">Calendar</a></li>
+        <li><a href="/survey"    class="nav-link">Settings</a></li>
+    </ul>
+    <div class="nav-user">
+        <span sec:authentication="name" class="nav-username"></span>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit" class="btn-logout">Sign out</button>
+        </form>
+    </div>
+</nav>
+
+<!-- ── Mobile bottom navigation ──────────────────────────── -->
+<nav th:fragment="mobile-nav" class="mobile-nav">
+    <a href="/today"    class="mobile-nav-item" th:classappend="${#httpServletRequest.requestURI == '/today'} ? 'active'">
+        <span class="mobile-nav-icon">&#9201;</span><span class="mobile-nav-label">Today</span>
+    </a>
+    <a href="/goals"    class="mobile-nav-item" th:classappend="${#httpServletRequest.requestURI.startsWith('/goal')} ? 'active'">
+        <span class="mobile-nav-icon">&#127937;</span><span class="mobile-nav-label">Goals</span>
+    </a>
+    <a href="/week"     class="mobile-nav-item" th:classappend="${#httpServletRequest.requestURI == '/week'} ? 'active'">
+        <span class="mobile-nav-icon">&#128197;</span><span class="mobile-nav-label">Week</span>
+    </a>
+    <a href="/calendar" class="mobile-nav-item" th:classappend="${#httpServletRequest.requestURI == '/calendar'} ? 'active'">
+        <span class="mobile-nav-icon">&#128198;</span><span class="mobile-nav-label">Calendar</span>
+    </a>
+</nav>
+
+<!-- ── Public top bar (unauthenticated) ──────────────────── -->
+<div th:fragment="top-bar-unauth" class="top-bar-unauth">
+    <div class="title">Coach</div>
 </div>
 
-<div th:fragment="top-bar-unauth">
-	<div class="title">You Got This!</div>
-	<div class="menu" >
-		&nbsp;
-    </div>
-    <!-- Add more menu items as needed -->
+<!-- ── Legacy authenticated top bar (kept for old templates) ─ -->
+<div th:fragment="top-bar">
+    <div th:replace="fragments :: nav"></div>
 </div>
+
+<!-- ── Flash messages ────────────────────────────────────── -->
+<div th:fragment="flash">
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-danger"  th:text="${error}"></div>
+    <div th:if="${warning}" class="alert alert-warning" th:text="${warning}"></div>
+</div>
+
+<!-- ── Status badge ──────────────────────────────────────── -->
+<span th:fragment="status-badge(status)" class="status-badge"
+      th:text="${status}"
+      th:classappend="${status == 'COMPLETED' ? ' badge-success' :
+                        status == 'ACTIVE'    ? ' badge-primary' :
+                        status == 'IN_PROGRESS' ? ' badge-primary' :
+                        status == 'DRAFT'     ? ' badge-secondary' :
+                        status == 'PLANNING'  ? ' badge-info' :
+                        status == 'PAUSED'    ? ' badge-warning' :
+                        status == 'READY'     ? ' badge-info' :
+                        status == 'BLOCKED'   ? ' badge-danger' :
+                        status == 'OVERDUE'   ? ' badge-danger' :
+                        status == 'ABANDONED' ? ' badge-secondary' : ' badge-secondary'}">
+</span>
+
+<!-- ── Progress bar ──────────────────────────────────────── -->
+<div th:fragment="progress-bar(pct)" class="progress-bar-wrap">
+    <div class="progress-bar-fill" th:style="'width:' + ${pct} + '%'"
+         th:text="${pct} + '%'"></div>
+</div>
+
+<!-- ── Feasibility warning ───────────────────────────────── -->
+<div th:fragment="feasibility-warning(feasibility)"
+     th:if="${feasibility != null}"
+     class="feasibility-box"
+     th:classappend="${feasibility.statusCssClass}">
+    <strong th:text="${feasibility.statusLabel}"></strong>:
+    <span th:text="${feasibility.explanation}"></span>
+</div>
+
+<!-- ── Confirmation dialog ───────────────────────────────── -->
+<script th:fragment="confirm-delete">
+function confirmDelete(msg) { return confirm(msg || 'Are you sure you want to delete this?'); }
+</script>
 
 </body>
+</html>

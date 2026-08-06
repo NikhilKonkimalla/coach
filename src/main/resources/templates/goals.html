@@ -2,74 +2,93 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Set or Update Your Goals</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach — Goals</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body>
-    <div class="container">
-        <div th:replace="fragments :: top-bar"></div>
-        <section class="goal-dashboard-intro">
-            <h2>Welcome to Your Goal Dashboard!</h2>
-            <p>Track, update, and manage your goals below. Add tasks with due dates to each goal so they appear on your calendar.</p>
-        </section>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
 
-        <a th:href="@{/showNewGoalForm}" class="btn btn-primary form-group">+ Add Goal</a>
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
 
+    <div class="page-header">
+        <h1 class="page-title">Goals</h1>
+        <a href="/showNewGoalForm" class="btn btn-primary">+ New goal</a>
+    </div>
+
+    <!-- Goal cards -->
+    <div th:if="${!goals.isEmpty()}">
         <div th:each="goal : ${goals}" class="goal-card">
             <div class="goal-card-header">
                 <div class="goal-card-title">
-                    <strong th:text="${goal.goalName}"></strong>
-                    <span class="goal-date">
-                        &mdash; Target:
-                        <span th:switch="${goal.monthNumber}">
-                            <span th:case="1">January</span>
-                            <span th:case="2">February</span>
-                            <span th:case="3">March</span>
-                            <span th:case="4">April</span>
-                            <span th:case="5">May</span>
-                            <span th:case="6">June</span>
-                            <span th:case="7">July</span>
-                            <span th:case="8">August</span>
-                            <span th:case="9">September</span>
-                            <span th:case="10">October</span>
-                            <span th:case="11">November</span>
-                            <span th:case="12">December</span>
-                        </span>
-                        <span th:text="${' ' + goal.year}"></span>
-                    </span>
+                    <a th:href="@{'/goal/' + ${goal.goalId}}" th:text="${goal.title}" class="goal-title-link"></a>
+                    <span th:replace="fragments :: status-badge(${goal.status})"></span>
                 </div>
                 <div class="goal-card-actions">
-                    <a th:href="@{/showFormForUpdate/{id}(id=${goal.goalId})}" class="btn btn-primary btn-sm">Edit</a>
-                    <a th:href="@{/deleteGoal/{id}(id=${goal.goalId})}" class="btn btn-danger btn-sm">Delete</a>
+                    <span class="goal-date" th:if="${goal.targetDate != null}"
+                          th:text="'Due ' + ${goal.targetDate}"></span>
+                    <a th:href="@{'/goal/' + ${goal.goalId}}" class="btn btn-outline btn-sm">Open</a>
+                    <a th:href="@{'/showFormForUpdate/' + ${goal.goalId}}" class="btn btn-outline btn-sm">Edit</a>
+                    <form th:action="@{'/deleteGoal/' + ${goal.goalId}}" method="post" style="display:inline"
+                          onsubmit="return confirmDelete('Delete this goal and all its tasks?')">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
                 </div>
             </div>
 
-            <p class="goal-importance" th:text="${goal.goalImportance}"></p>
+            <p class="goal-description" th:if="${goal.description != null}" th:text="${goal.description}"></p>
 
-            <!-- Tasks list -->
+            <div class="goal-meta-row" th:if="${goal.weeklyCapacityMinutes != null}">
+                <span class="goal-meta-item">
+                    <strong th:text="${goal.weeklyCapacityMinutes}"></strong> min/week capacity
+                </span>
+                <span class="goal-meta-item" th:if="${goal.priority != null}">
+                    Priority: <strong th:text="${goal.priority}"></strong>
+                </span>
+            </div>
+
+            <!-- Quick task list -->
             <div class="tasks-section">
-                <h4>Tasks</h4>
+                <h4>Tasks <span class="task-count" th:if="${tasksByGoal[goal.goalId] != null}"
+                                th:text="'(' + ${#lists.size(tasksByGoal[goal.goalId])} + ')'"></span></h4>
                 <ul class="task-list" th:if="${tasksByGoal[goal.goalId] != null and !tasksByGoal[goal.goalId].isEmpty()}">
-                    <li th:each="task : ${tasksByGoal[goal.goalId]}" class="task-item">
-                        <span class="task-name" th:text="${task.taskName}"></span>
-                        <span class="task-date" th:text="${task.dueDate}"></span>
-                        <a th:href="@{/deleteTask/{id}(id=${task.taskId})}" class="btn btn-danger btn-xs">&#x2715;</a>
+                    <li th:each="task : ${tasksByGoal[goal.goalId]}" class="task-item"
+                        th:classappend="${task.status == 'COMPLETED'} ? 'task-done'">
+                        <span class="task-status-dot"
+                              th:classappend="${task.status == 'COMPLETED'} ? 'dot-done' :
+                                              task.overdue ? 'dot-overdue' : 'dot-ready'"></span>
+                        <span class="task-name" th:text="${task.title}"
+                              th:classappend="${task.status == 'COMPLETED'} ? 'task-strikethrough'"></span>
+                        <span class="task-est" th:if="${task.estimatedMinutes != null}"
+                              th:text="${task.estimatedMinutes} + 'm'"></span>
+                        <span class="task-date" th:if="${task.dueDate != null}" th:text="${task.dueDate}"></span>
+                        <a th:href="@{'/task/' + ${task.taskId}}" class="btn btn-outline btn-xs">View</a>
+                        <form th:action="@{'/deleteTask/' + ${task.taskId}}" method="post" style="display:inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-danger btn-xs"
+                                    onclick="return confirmDelete('Delete this task?')">&times;</button>
+                        </form>
                     </li>
                 </ul>
-                <p class="no-tasks" th:if="${tasksByGoal[goal.goalId] == null or tasksByGoal[goal.goalId].isEmpty()}">No tasks yet.</p>
-
-                <!-- Add task form -->
-                <form th:action="@{/saveTask}" method="post" class="add-task-form">
-                    <input type="hidden" name="goalId" th:value="${goal.goalId}" />
-                    <input type="text" name="taskName" placeholder="Task name" required class="task-input" />
-                    <input type="date" name="dueDate" required class="task-date-input" />
-                    <button type="submit" class="btn btn-primary btn-sm">Add Task</button>
-                </form>
+                <p class="no-tasks" th:if="${tasksByGoal[goal.goalId] == null or tasksByGoal[goal.goalId].isEmpty()}">
+                    No tasks yet. <a th:href="@{'/goal/' + ${goal.goalId}}">Add tasks inside the goal.</a>
+                </p>
             </div>
         </div>
-
-        <p th:if="${goals.isEmpty()}">No goals yet. Click <strong>Add Goal</strong> to get started!</p>
     </div>
+
+    <div class="empty-state" th:if="${goals.isEmpty()}">
+        <h2>What would you like to accomplish?</h2>
+        <p>Goals give your tasks direction and help you track what matters.</p>
+        <a href="/showNewGoalForm" class="btn btn-primary">Create your first goal</a>
+    </div>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
+<script th:inline="javascript">
+function confirmDelete(msg) { return confirm(msg || 'Are you sure?'); }
+</script>
 </body>
 </html>

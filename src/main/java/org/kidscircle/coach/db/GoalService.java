@@ -1,17 +1,22 @@
 package org.kidscircle.coach.db;
 
-import java.util.List;
-
 import org.kidscircle.coach.model.Goal;
+
+import java.util.List;
 
 public interface GoalService {
 
-	List<Goal> getGoalForUser(long userId);
+    List<Goal> getGoalForUser(long userId);
 
-	void saveGoal(Goal goal);
+    List<Goal> getActiveGoalsForUser(long userId);
 
-	Goal getGoalById(long id);
+    void saveGoal(Goal goal);
 
-	void deleteGoalById(long id);
+    Goal getGoalById(long id);
 
+    void deleteGoalById(long id);
+
+    void updateStatus(long goalId, String status);
+
+    int calculateProgressPercent(long goalId);
 }

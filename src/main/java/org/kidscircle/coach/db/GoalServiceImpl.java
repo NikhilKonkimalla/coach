@@ -1,45 +1,64 @@
 package org.kidscircle.coach.db;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.kidscircle.coach.model.Goal;
+import org.kidscircle.coach.model.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
-public class GoalServiceImpl implements GoalService{
-	
-	    @Autowired
-	    private GoalRepository goalRepository;
+public class GoalServiceImpl implements GoalService {
 
-	    @Override
-	    public List < Goal > getGoalForUser(long userId) 
-	    { 
-	    	List<Goal> goals = (List<Goal>) goalRepository.findAll();
-	    	return goals.stream().filter(g-> g.getUserId()==userId).collect(Collectors.toList());
-	    }
+    @Autowired
+    private GoalRepository goalRepository;
 
-	    @Override
-	    public void saveGoal(Goal goal) {
-	        this.goalRepository.save(goal);
-	    }
+    @Autowired
+    private TaskRepository taskRepository;
 
-	    @Override
-	    public Goal getGoalById(long id) {
-	        Optional < Goal > optional = goalRepository.findById(id);
-	        Goal goal = null;
-	        if (optional.isPresent()) {
-	            goal = optional.get();
-	        } else {
-	            throw new RuntimeException(" Goal not found for id :: " + id);
-	        }
-	        return goal;
-	    }
+    @Override
+    public List<Goal> getGoalForUser(long userId) {
+        return goalRepository.findByUserId(userId);
+    }
 
-	    @Override
-	    public void deleteGoalById(long id) {
-	        this.goalRepository.deleteById(id);
-	    }
+    @Override
+    public List<Goal> getActiveGoalsForUser(long userId) {
+        return goalRepository.findActiveByUserId(userId);
+    }
 
+    @Override
+    public void saveGoal(Goal goal) {
+        goalRepository.save(goal);
+    }
+
+    @Override
+    public Goal getGoalById(long id) {
+        Optional<Goal> optional = goalRepository.findById(id);
+        return optional.orElseThrow(() -> new RuntimeException("Goal not found: " + id));
+    }
+
+    @Override
+    public void deleteGoalById(long id) {
+        goalRepository.deleteById(id);
+    }
+
+    @Override
+    public void updateStatus(long goalId, String status) {
+        Goal goal = getGoalById(goalId);
+        goal.setStatus(status);
+        goalRepository.save(goal);
+    }
+
+    @Override
+    public int calculateProgressPercent(long goalId) {
+        List<Task> tasks = taskRepository.findByGoalId(goalId);
+        if (tasks == null || tasks.isEmpty()) return 0;
+        long required = tasks.stream().filter(t -> Boolean.TRUE.equals(t.getRequired()) && t.getParentTaskId() == null).count();
+        if (required == 0) return 0;
+        long completed = tasks.stream()
+                .filter(t -> Boolean.TRUE.equals(t.getRequired()) && t.getParentTaskId() == null && "COMPLETED".equals(t.getStatus()))
+                .count();
+        return (int) ((completed * 100) / required);
+    }
 }

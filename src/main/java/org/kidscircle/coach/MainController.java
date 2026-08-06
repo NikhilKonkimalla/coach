@@ -1,251 +1,401 @@
 package org.kidscircle.coach;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 
 import org.kidscircle.coach.db.*;
 import org.kidscircle.coach.model.*;
+import org.kidscircle.coach.service.FeasibilityResult;
+import org.kidscircle.coach.service.FeasibilityService;
+import org.kidscircle.coach.service.NextActionService;
+import org.kidscircle.coach.web.BaseController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-public class MainController {
+public class MainController extends BaseController {
 
-	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
+    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
-	@Autowired private UserRepository userRepository;
-	@Autowired private SurveyRepository surveyService;
-	@Autowired private GoalService goalService;
-	@Autowired private TaskService taskService;
+    @Autowired private SurveyRepository surveyRepository;
+    @Autowired private GoalService goalService;
+    @Autowired private TaskService taskService;
+    @Autowired private MilestoneService milestoneService;
+    @Autowired private FeasibilityService feasibilityService;
+    @Autowired private NextActionService nextActionService;
+    @Autowired private PasswordEncoder passwordEncoder;
 
+    // ─── Public pages ───────────────────────────────────────────
 
+    @GetMapping(value = {"/", "/login"})
+    public String loginPage() {
+        return "login";
+    }
 
+    @GetMapping("/register")
+    public String registerPage(Model model) {
+        model.addAttribute("user", new User());
+        return "register";
+    }
 
-	@GetMapping("/greeting")
-	public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name, Model model) {
-		model.addAttribute("name", name);
-		return "greeting";
-	}
-
-	@GetMapping(value = {"/", "/login"})
-	public String login() {
-  	logger.info("This is an info message");
-  	logger.debug("This is a debug message");
-  	logger.error("This is an error message");
-		return "login";
-	}
-
-	@GetMapping("/error")
-	public String error() {
-		return "login";
-	}
-
-
-  @PostMapping("/login")
-  public String authenticate(@RequestParam("username") String userName,
-                             @RequestParam("password") String password,
-                             Model model,
-                             HttpSession session) {
-      try {
-      	logger.error("Hello Word" + userName+password);
-        User u = userRepository.findUserByUserName(userName);
-        if( !u.getPassword().equals(password))
-        {
-            model.addAttribute("error", true);
-            return "login";
+    @PostMapping("/register-submit")
+    public String submitRegister(@ModelAttribute User user,
+                                 RedirectAttributes ra) {
+        if (userRepository.findByEmail(user.getEmail()) != null) {
+            ra.addFlashAttribute("error", "An account with that email already exists.");
+            return "redirect:/register";
         }
-        session.setAttribute("user", u);
-      	return "redirect:/calendar";
-      } catch (Exception e) {
-          model.addAttribute("error", true);
-          return "login";
-      }
-  }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getDisplayName() == null || user.getDisplayName().isBlank()) {
+            user.setDisplayName(user.getName() != null ? user.getName() : user.getEmail());
+        }
+        userRepository.save(user);
+        ra.addFlashAttribute("success", "Account created! Please log in.");
+        return "redirect:/login";
+    }
 
+    // ─── Survey (legacy) ────────────────────────────────────────
 
-  @GetMapping("/register")
-  public String register(Model model) {
-      model.addAttribute("user", new User());
-      return "register";
-  }
+    @GetMapping("/survey")
+    public String survey(Principal principal, Model model) {
+        User user = getCurrentUser(principal);
+        Survey s = surveyRepository.findSurveyByUserId(user.getUserId());
+        if (s == null) s = new Survey();
+        s.setUserId(user.getUserId());
+        model.addAttribute("survey", s);
+        return "survey";
+    }
 
-  @PostMapping("/register-submit")
-  public String submitStudentForm(HttpSession session, Model model, @ModelAttribute User user) {
-      System.out.println(user);
-      userRepository.save(user);
-      session.setAttribute("user", user);
-      return "redirect:/survey";
-  }
+    @PostMapping("/survey-submit")
+    public String submitSurvey(Principal principal, @ModelAttribute Survey s) {
+        User user = getCurrentUser(principal);
+        s.setUserId(user.getUserId());
+        surveyRepository.save(s);
+        return "redirect:/dashboard";
+    }
 
+    // ─── Goals ──────────────────────────────────────────────────
 
+    @GetMapping("/goals")
+    public String showGoals(Principal principal, Model model) {
+        User user = getCurrentUser(principal);
+        List<Goal> goals = goalService.getGoalForUser(user.getUserId());
+        model.addAttribute("goals", goals);
+        List<Task> allTasks = taskService.getTasksForUser(user.getUserId());
+        Map<Long, List<Task>> tasksByGoal = allTasks.stream()
+                .collect(Collectors.groupingBy(Task::getGoalId));
+        model.addAttribute("tasksByGoal", tasksByGoal);
+        model.addAttribute("newTask", new Task());
+        return "goals";
+    }
 
-  @GetMapping("/survey")
-  public String survey(HttpSession session, Model model) {
-	  User user = (User) session.getAttribute("user");
-	  Survey s = surveyService.findSurveyByUserId(user.getUserId());
-	  if ( s == null)
-		  s = new Survey();
-	  s.setUserId(user.getUserId());
-	  model.addAttribute("survey", s);
-      return "survey";
-  }
+    @GetMapping("/showNewGoalForm")
+    public String showNewGoalForm(Model model) {
+        model.addAttribute("goal", new Goal());
+        return "new_goal";
+    }
 
-  @PostMapping("/survey-submit")
-  public String submitSurvey(HttpSession session, Model model, @ModelAttribute Survey s) {
-	  logger.info(s.getDrive());
-	  User user = (User) session.getAttribute("user");
-	  s.setUserId(user.getUserId());
-	  surveyService.save(s);
-	  return "redirect:/calendar";
-  }
+    @PostMapping("/saveGoal")
+    public String saveGoal(Principal principal,
+                           @ModelAttribute("goal") Goal goal,
+                           RedirectAttributes ra) {
+        User user = getCurrentUser(principal);
+        goal.setUserId(user.getUserId());
+        if (goal.getStatus() == null) goal.setStatus("ACTIVE");
+        goalService.saveGoal(goal);
+        ra.addFlashAttribute("success", "Goal saved.");
+        return "redirect:/goals";
+    }
 
-  @GetMapping("/goals")
-  public String showGoals(HttpSession session, Model model) {
-	  User user = (User) session.getAttribute("user");
-	  List<Goal> goals = goalService.getGoalForUser(user.getUserId());
-	  model.addAttribute("goals", goals);
+    @GetMapping("/showFormForUpdate/{id}")
+    public String showFormForUpdate(@PathVariable long id, Principal principal, Model model) {
+        Goal goal = goalService.getGoalById(id);
+        assertOwnership(goal.getUserId(), principal);
+        model.addAttribute("goal", goal);
+        return "update_goal";
+    }
 
-	  // Group tasks by goalId for display
-	  List<Task> allTasks = taskService.getTasksForUser(user.getUserId());
-	  Map<Long, List<Task>> tasksByGoal = allTasks.stream()
-	      .collect(Collectors.groupingBy(Task::getGoalId));
-	  model.addAttribute("tasksByGoal", tasksByGoal);
-	  model.addAttribute("newTask", new Task());
+    @PostMapping("/updateGoal")
+    public String updateGoal(@ModelAttribute("goal") Goal goal,
+                             Principal principal,
+                             RedirectAttributes ra) {
+        Goal existing = goalService.getGoalById(goal.getGoalId());
+        assertOwnership(existing.getUserId(), principal);
+        existing.setTitle(goal.getTitle());
+        existing.setDescription(goal.getDescription());
+        existing.setTargetDate(goal.getTargetDate());
+        existing.setWeeklyCapacityMinutes(goal.getWeeklyCapacityMinutes());
+        existing.setPriority(goal.getPriority());
+        existing.setSuccessCriteria(goal.getSuccessCriteria());
+        existing.setMotivation(goal.getMotivation());
+        existing.setStatus(goal.getStatus() != null ? goal.getStatus() : existing.getStatus());
+        goalService.saveGoal(existing);
+        ra.addFlashAttribute("success", "Goal updated.");
+        return "redirect:/goals";
+    }
 
-      return "goals";
-  }
+    @GetMapping("/deleteGoal/{id}")
+    public String deleteGoal(@PathVariable long id, Principal principal, RedirectAttributes ra) {
+        Goal goal = goalService.getGoalById(id);
+        assertOwnership(goal.getUserId(), principal);
+        goalService.deleteGoalById(id);
+        ra.addFlashAttribute("success", "Goal deleted.");
+        return "redirect:/goals";
+    }
 
-  @GetMapping("/showNewGoalForm")
-  public String showNewGoalForm(Model model) {
-      Goal goal = new Goal();
-      model.addAttribute("goal", goal);
-      return "new_goal";
-  }
+    @GetMapping("/goal/{id}")
+    public String goalDetail(@PathVariable long id, Principal principal, Model model) {
+        Goal goal = goalService.getGoalById(id);
+        assertOwnership(goal.getUserId(), principal);
+        User user = getCurrentUser(principal);
+        List<Milestone> milestones = milestoneService.getMilestonesForGoal(id);
+        List<Task> tasks = taskService.getTopLevelTasksForGoal(id);
+        FeasibilityResult feasibility = feasibilityService.calculate(goal);
+        int progress = goalService.calculateProgressPercent(id);
+        model.addAttribute("goal", goal);
+        model.addAttribute("milestones", milestones);
+        model.addAttribute("tasks", tasks);
+        model.addAttribute("feasibility", feasibility);
+        model.addAttribute("progress", progress);
+        model.addAttribute("newTask", new Task());
+        model.addAttribute("newMilestone", new Milestone());
+        return "goal_detail";
+    }
 
-  @PostMapping("/saveGoal")
-  public String saveGoal(HttpSession session,@ModelAttribute("Goal") Goal goal) {
-	  User user = (User) session.getAttribute("user");
-	  goal.setUserId(user.getUserId());
-      goalService.saveGoal(goal);
-      return "redirect:/goals";
-  }
+    @PostMapping("/goal/{id}/status")
+    public String updateGoalStatus(@PathVariable long id,
+                                   @RequestParam String status,
+                                   Principal principal,
+                                   RedirectAttributes ra) {
+        Goal goal = goalService.getGoalById(id);
+        assertOwnership(goal.getUserId(), principal);
+        goalService.updateStatus(id, status);
+        ra.addFlashAttribute("success", "Goal status updated to " + status + ".");
+        return "redirect:/goal/" + id;
+    }
 
-  @GetMapping("/showFormForUpdate/{id}")
-  public String showFormForUpdate(@PathVariable(value = "id") long id, Model model) {
-      Goal goal = (Goal) goalService.getGoalById(id);
-      model.addAttribute("goal", goal);
-      return "update_goal";
-  }
+    // ─── Milestones ─────────────────────────────────────────────
 
-  @GetMapping("/deleteGoal/{id}")
-  public String deleteGoal(@PathVariable(value = "id") long id) {
-      this.goalService.deleteGoalById(id);
-      return "redirect:/goals";
-  }
+    @PostMapping("/goal/{goalId}/milestone/save")
+    public String saveMilestone(@PathVariable long goalId,
+                                @ModelAttribute Milestone milestone,
+                                Principal principal,
+                                RedirectAttributes ra) {
+        Goal goal = goalService.getGoalById(goalId);
+        assertOwnership(goal.getUserId(), principal);
+        milestone.setGoalId(goalId);
+        milestoneService.saveMilestone(milestone);
+        ra.addFlashAttribute("success", "Milestone saved.");
+        return "redirect:/goal/" + goalId;
+    }
 
-  @PostMapping("/saveTask")
-  public String saveTask(HttpSession session, @ModelAttribute Task task) {
-	  User user = (User) session.getAttribute("user");
-	  task.setUserId(user.getUserId());
-	  taskService.saveTask(task);
-	  return "redirect:/goals";
-  }
+    @GetMapping("/milestone/delete/{id}")
+    public String deleteMilestone(@PathVariable long id, Principal principal, RedirectAttributes ra) {
+        Milestone m = milestoneService.getMilestoneById(id);
+        Goal goal = goalService.getGoalById(m.getGoalId());
+        assertOwnership(goal.getUserId(), principal);
+        milestoneService.deleteMilestoneById(id);
+        ra.addFlashAttribute("success", "Milestone deleted.");
+        return "redirect:/goal/" + m.getGoalId();
+    }
 
-  @GetMapping("/deleteTask/{id}")
-  public String deleteTask(@PathVariable(value = "id") long id) {
-	  taskService.deleteTaskById(id);
-	  return "redirect:/goals";
-  }
+    // ─── Tasks ──────────────────────────────────────────────────
 
-  @GetMapping("/calendar")
-  public String showCalendar(HttpSession session, Model model,
-          @RequestParam(required = false) Integer year,
-          @RequestParam(required = false) Integer month) {
+    @PostMapping("/saveTask")
+    public String saveTask(Principal principal,
+                           @ModelAttribute Task task,
+                           @RequestParam(required = false) Long goalId,
+                           RedirectAttributes ra) {
+        User user = getCurrentUser(principal);
+        task.setUserId(user.getUserId());
+        if (goalId != null) task.setGoalId(goalId);
+        taskService.saveTask(task);
+        ra.addFlashAttribute("success", "Task saved.");
+        String redirect = goalId != null ? "/goal/" + goalId : "/goals";
+        return "redirect:" + redirect;
+    }
 
-	  User user = (User) session.getAttribute("user");
+    @GetMapping("/task/{id}")
+    public String taskDetail(@PathVariable long id, Principal principal, Model model) {
+        Task task = taskService.getTaskById(id);
+        User user = getCurrentUser(principal);
+        if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
+        Goal goal = goalService.getGoalById(task.getGoalId());
+        List<Task> subtasks = taskService.getTasksForGoal(task.getGoalId()).stream()
+                .filter(t -> task.getTaskId().equals(t.getParentTaskId()))
+                .collect(Collectors.toList());
+        model.addAttribute("task", task);
+        model.addAttribute("goal", goal);
+        model.addAttribute("subtasks", subtasks);
+        return "task_detail";
+    }
 
-	  LocalDate now = LocalDate.now();
-	  int displayYear  = (year  != null) ? year  : now.getYear();
-	  int displayMonth = (month != null) ? month : now.getMonthValue();
+    @GetMapping("/task/{id}/edit")
+    public String taskEdit(@PathVariable long id, Principal principal, Model model) {
+        Task task = taskService.getTaskById(id);
+        User user = getCurrentUser(principal);
+        if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
+        model.addAttribute("task", task);
+        return "task_edit";
+    }
 
-	  YearMonth yearMonth = YearMonth.of(displayYear, displayMonth);
-	  int daysInMonth   = yearMonth.lengthOfMonth();
-	  // DayOfWeek: Monday=1 … Sunday=7. We want Sunday=0 for a Sun-first grid.
-	  int firstDayOfWeek = yearMonth.atDay(1).getDayOfWeek().getValue() % 7;
+    @PostMapping("/task/{id}/save")
+    public String taskSave(@PathVariable long id,
+                           @ModelAttribute Task formTask,
+                           Principal principal,
+                           RedirectAttributes ra) {
+        Task task = taskService.getTaskById(id);
+        User user = getCurrentUser(principal);
+        if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
+        task.setTitle(formTask.getTitle());
+        task.setDescription(formTask.getDescription());
+        task.setDefinitionOfDone(formTask.getDefinitionOfDone());
+        task.setEstimatedMinutes(formTask.getEstimatedMinutes());
+        task.setPriority(formTask.getPriority());
+        task.setDueDate(formTask.getDueDate());
+        task.setSchedulingType(formTask.getSchedulingType());
+        taskService.saveTask(task);
+        ra.addFlashAttribute("success", "Task updated.");
+        return "redirect:/task/" + id;
+    }
 
-	  // Build a list of weeks; each week is 7 day-numbers (0 = empty padding)
-	  List<List<Integer>> weeks = new ArrayList<>();
-	  List<Integer> week = new ArrayList<>();
-	  for (int i = 0; i < firstDayOfWeek; i++) week.add(0);
-	  for (int day = 1; day <= daysInMonth; day++) {
-	      week.add(day);
-	      if (week.size() == 7) { weeks.add(week); week = new ArrayList<>(); }
-	  }
-	  while (week.size() < 7 && !week.isEmpty()) week.add(0);
-	  if (!week.isEmpty()) weeks.add(week);
+    @PostMapping("/task/{id}/complete")
+    public String completeTask(@PathVariable long id,
+                               @RequestParam(required = false) Integer actualMinutes,
+                               @RequestParam(required = false) String completionNote,
+                               Principal principal,
+                               RedirectAttributes ra) {
+        Task task = taskService.getTaskById(id);
+        User user = getCurrentUser(principal);
+        if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
+        taskService.completeTask(id, actualMinutes, completionNote);
+        ra.addFlashAttribute("success", "Great work! Task marked complete.");
+        return "redirect:/today";
+    }
 
-	  // Tasks grouped by day-of-month (only matching year/month)
-	  List<Task> tasks = taskService.getTasksForUser(user.getUserId());
-	  Map<Integer, List<Task>> tasksByDay = new HashMap<>();
-	  for (Task t : tasks) {
-	      if (t.getDueDate() != null
-	          && t.getDueDate().getYear() == displayYear
-	          && t.getDueDate().getMonthValue() == displayMonth) {
-	          tasksByDay.computeIfAbsent(t.getDueDate().getDayOfMonth(), k -> new ArrayList<>()).add(t);
-	      }
-	  }
+    @PostMapping("/task/{id}/reopen")
+    public String reopenTask(@PathVariable long id, Principal principal, RedirectAttributes ra) {
+        Task task = taskService.getTaskById(id);
+        User user = getCurrentUser(principal);
+        if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
+        taskService.updateStatus(id, "READY");
+        ra.addFlashAttribute("success", "Task reopened.");
+        return "redirect:/task/" + id;
+    }
 
-	  // Goal name lookup map
-	  List<Goal> goals = goalService.getGoalForUser(user.getUserId());
-	  Map<Long, String> goalNames = new HashMap<>();
-	  for (Goal g : goals) goalNames.put(g.getGoalId(), g.getGoalName());
+    @PostMapping("/task/{id}/status")
+    public String updateTaskStatus(@PathVariable long id,
+                                   @RequestParam String status,
+                                   Principal principal,
+                                   RedirectAttributes ra) {
+        Task task = taskService.getTaskById(id);
+        User user = getCurrentUser(principal);
+        if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
+        taskService.updateStatus(id, status);
+        ra.addFlashAttribute("success", "Task status updated.");
+        String referer = task.getGoalId() != null ? "/goal/" + task.getGoalId() : "/goals";
+        return "redirect:" + referer;
+    }
 
-	  YearMonth prev = yearMonth.minusMonths(1);
-	  YearMonth next = yearMonth.plusMonths(1);
+    @GetMapping("/deleteTask/{id}")
+    public String deleteTask(@PathVariable long id, Principal principal, RedirectAttributes ra) {
+        Task task = taskService.getTaskById(id);
+        User user = getCurrentUser(principal);
+        if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
+        Long goalId = task.getGoalId();
+        taskService.deleteTaskById(id);
+        ra.addFlashAttribute("success", "Task deleted.");
+        return "redirect:" + (goalId != null ? "/goal/" + goalId : "/goals");
+    }
 
-	  model.addAttribute("year",        displayYear);
-	  model.addAttribute("month",       displayMonth);
-	  model.addAttribute("monthName",   yearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
-	  model.addAttribute("weeks",       weeks);
-	  model.addAttribute("tasksByDay",  tasksByDay);
-	  model.addAttribute("goalNames",   goalNames);
-	  model.addAttribute("prevYear",    prev.getYear());
-	  model.addAttribute("prevMonth",   prev.getMonthValue());
-	  model.addAttribute("nextYear",    next.getYear());
-	  model.addAttribute("nextMonth",   next.getMonthValue());
-	  model.addAttribute("todayDay",    now.getDayOfMonth());
-	  model.addAttribute("todayYear",   now.getYear());
-	  model.addAttribute("todayMonth",  now.getMonthValue());
+    // ─── Calendar (legacy) ──────────────────────────────────────
 
-	  return "calendar";
-  }
+    @GetMapping("/calendar")
+    public String showCalendar(Principal principal, Model model,
+                               @RequestParam(required = false) Integer year,
+                               @RequestParam(required = false) Integer month) {
+        User user = getCurrentUser(principal);
+        LocalDate now = LocalDate.now();
+        int displayYear = (year != null) ? year : now.getYear();
+        int displayMonth = (month != null) ? month : now.getMonthValue();
+        YearMonth yearMonth = YearMonth.of(displayYear, displayMonth);
+        int daysInMonth = yearMonth.lengthOfMonth();
+        int firstDayOfWeek = yearMonth.atDay(1).getDayOfWeek().getValue() % 7;
+        List<List<Integer>> weeks = new ArrayList<>();
+        List<Integer> week = new ArrayList<>();
+        for (int i = 0; i < firstDayOfWeek; i++) week.add(0);
+        for (int day = 1; day <= daysInMonth; day++) {
+            week.add(day);
+            if (week.size() == 7) { weeks.add(week); week = new ArrayList<>(); }
+        }
+        while (week.size() < 7 && !week.isEmpty()) week.add(0);
+        if (!week.isEmpty()) weeks.add(week);
+        List<Task> tasks = taskService.getTasksForUser(user.getUserId());
+        Map<Integer, List<Task>> tasksByDay = new HashMap<>();
+        for (Task t : tasks) {
+            if (t.getDueDate() != null
+                    && t.getDueDate().getYear() == displayYear
+                    && t.getDueDate().getMonthValue() == displayMonth) {
+                tasksByDay.computeIfAbsent(t.getDueDate().getDayOfMonth(), k -> new ArrayList<>()).add(t);
+            }
+        }
+        List<Goal> goals = goalService.getGoalForUser(user.getUserId());
+        Map<Long, String> goalNames = new HashMap<>();
+        for (Goal g : goals) goalNames.put(g.getGoalId(), g.getTitle());
+        YearMonth prev = yearMonth.minusMonths(1);
+        YearMonth next = yearMonth.plusMonths(1);
+        model.addAttribute("year", displayYear);
+        model.addAttribute("month", displayMonth);
+        model.addAttribute("monthName", yearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
+        model.addAttribute("weeks", weeks);
+        model.addAttribute("tasksByDay", tasksByDay);
+        model.addAttribute("goalNames", goalNames);
+        model.addAttribute("prevYear", prev.getYear());
+        model.addAttribute("prevMonth", prev.getMonthValue());
+        model.addAttribute("nextYear", next.getYear());
+        model.addAttribute("nextMonth", next.getMonthValue());
+        model.addAttribute("todayDay", now.getDayOfMonth());
+        model.addAttribute("todayYear", now.getYear());
+        model.addAttribute("todayMonth", now.getMonthValue());
+        return "calendar";
+    }
 
-  @GetMapping("/resources")
-  public String resources(Model model) {
-      return "resources";
-  }
+    @GetMapping("/resources")
+    public String resources() {
+        return "resources";
+    }
 
-  @ModelAttribute("potentialGoals")
-  public List<PotentialGoal> getPotentialGoals()
-  {
-	  List<PotentialGoal> potentialGoals = new ArrayList<PotentialGoal>();
-	  potentialGoals.add(new PotentialGoal("ACT", "This is somehing about how to prep for ACT"));
-	  potentialGoals.add(new PotentialGoal("SAT", "This is somehing about how to prep for SAT"));
-	  return potentialGoals;
-  }
+    @GetMapping("/error")
+    public String error() {
+        return "login";
+    }
 
+    // ─── Helpers ────────────────────────────────────────────────
 
+    private void assertOwnership(Long resourceUserId, Principal principal) {
+        User current = getCurrentUser(principal);
+        if (!current.getUserId().equals(resourceUserId)) {
+            throw new SecurityException("Access denied");
+        }
+    }
+
+    @ModelAttribute("potentialGoals")
+    public List<PotentialGoal> getPotentialGoals() {
+        List<PotentialGoal> list = new ArrayList<>();
+        list.add(new PotentialGoal("ACT", "Prepare for the ACT exam"));
+        list.add(new PotentialGoal("SAT", "Prepare for the SAT exam"));
+        return list;
+    }
 }

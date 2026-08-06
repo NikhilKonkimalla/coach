@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach — Today</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
+
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
+
+    <div class="page-header">
+        <h1 class="page-title">Today</h1>
+        <span class="page-subtitle" th:text="${today}"></span>
+    </div>
+
+    <!-- Recommended next action -->
+    <section class="next-action-card" th:if="${nextAction != null}">
+        <div class="next-action-header">
+            <span class="next-action-label">Start here</span>
+            <span class="next-action-reason" th:text="${nextAction.reason}"></span>
+        </div>
+        <div class="next-action-body">
+            <strong th:text="${nextAction.task.title}"></strong>
+            <span th:if="${nextAction.task.estimatedMinutes != null}" class="task-estimate"
+                  th:text="${nextAction.task.estimatedMinutes} + ' min'"></span>
+        </div>
+        <div class="next-action-actions">
+            <form th:action="@{'/today/complete-task'}" method="post" style="display:inline">
+                <input type="hidden" name="taskId" th:value="${nextAction.task.taskId}"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-success btn-sm">Mark complete</button>
+            </form>
+            <form th:action="@{'/task/' + ${nextAction.task.taskId} + '/status'}" method="post" style="display:inline">
+                <input type="hidden" name="status" value="IN_PROGRESS"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-primary btn-sm">Start</button>
+            </form>
+            <a th:href="@{'/task/' + ${nextAction.task.taskId}}" class="btn btn-outline btn-sm">Details</a>
+        </div>
+    </section>
+
+    <!-- Today's tasks -->
+    <section class="today-section">
+        <h2>Scheduled for today</h2>
+
+        <div th:if="${!todayTasks.isEmpty()}">
+            <div th:each="task : ${todayTasks}" class="task-card"
+                 th:classappend="${task.status == 'COMPLETED'} ? 'task-card-done' : task.overdue ? 'task-card-overdue' : ''">
+                <div class="task-card-header">
+                    <div class="task-card-left">
+                        <!-- Inline complete form -->
+                        <form th:if="${task.status != 'COMPLETED'}"
+                              th:action="@{'/today/complete-task'}" method="post" style="display:inline">
+                            <input type="hidden" name="taskId" th:value="${task.taskId}"/>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="check-btn" title="Mark complete">&#9744;</button>
+                        </form>
+                        <span class="check-btn check-done" th:if="${task.status == 'COMPLETED'}">&#9745;</span>
+                    </div>
+                    <div class="task-card-body">
+                        <a th:href="@{'/task/' + ${task.taskId}}" class="task-title-link"
+                           th:text="${task.title}"
+                           th:classappend="${task.status == 'COMPLETED'} ? 'task-strikethrough'"></a>
+                        <div class="task-card-meta">
+                            <span class="goal-chip" th:if="${goalTitles[task.goalId] != null}"
+                                  th:text="${goalTitles[task.goalId]}"></span>
+                            <span class="task-est-label" th:if="${task.estimatedMinutes != null}"
+                                  th:text="${task.estimatedMinutes} + ' min'"></span>
+                            <span th:replace="fragments :: status-badge(${task.status})"></span>
+                        </div>
+                        <p class="task-dod" th:if="${task.definitionOfDone != null}"
+                           th:text="'Done when: ' + ${task.definitionOfDone}"></p>
+                    </div>
+                    <div class="task-card-actions" th:if="${task.status != 'COMPLETED'}">
+                        <a th:href="@{'/task/' + ${task.taskId}}" class="btn btn-outline btn-xs">Open</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state" th:if="${todayTasks.isEmpty()}">
+            <p>Nothing is scheduled for today.</p>
+            <a href="/week" class="btn btn-primary">Plan the week</a>
+            <a href="/goals" class="btn btn-outline">Open a goal</a>
+        </div>
+    </section>
+
+    <!-- Overdue tasks (if any) -->
+    <section class="today-section" th:if="${!overdueTasks.isEmpty()}">
+        <h2 class="section-title-danger">Overdue</h2>
+        <div th:each="task : ${overdueTasks}" class="task-card task-card-overdue">
+            <div class="task-card-body">
+                <a th:href="@{'/task/' + ${task.taskId}}" class="task-title-link" th:text="${task.title}"></a>
+                <div class="task-card-meta">
+                    <span class="goal-chip" th:if="${goalTitles[task.goalId] != null}"
+                          th:text="${goalTitles[task.goalId]}"></span>
+                    <span class="task-due-label text-danger" th:text="'Due ' + ${task.dueDate}"></span>
+                </div>
+            </div>
+            <div class="task-card-actions">
+                <form th:action="@{'/today/complete-task'}" method="post" style="display:inline">
+                    <input type="hidden" name="taskId" th:value="${task.taskId}"/>
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-success btn-xs">Done</button>
+                </form>
+                <a th:href="@{'/task/' + ${task.taskId} + '/edit'}" class="btn btn-outline btn-xs">Reschedule</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Work sessions today -->
+    <section class="today-section" th:if="${!sessions.isEmpty()}">
+        <h2>Work sessions</h2>
+        <div th:each="s : ${sessions}" class="session-card">
+            <span class="session-time" th:if="${s.startTime != null}" th:text="${s.startTime}"></span>
+            <span class="session-mins" th:text="${s.plannedMinutes} + ' min planned'"></span>
+            <span th:replace="fragments :: status-badge(${s.status})"></span>
+        </div>
+    </section>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
+</body>
+</html>

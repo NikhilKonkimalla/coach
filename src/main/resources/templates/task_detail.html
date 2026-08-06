@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Coach — ' + ${task.title}">Coach — Task</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
+
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
+
+    <div class="breadcrumb">
+        <a href="/goals">Goals</a>
+        <span> / </span>
+        <a th:href="@{'/goal/' + ${goal.goalId}}" th:text="${goal.title}">Goal</a>
+        <span> / </span>
+        <span th:text="${task.title}">Task</span>
+    </div>
+
+    <div class="task-detail-header">
+        <div class="task-detail-title-row">
+            <div>
+                <span th:replace="fragments :: status-badge(${task.status})"></span>
+                <h1 class="page-title" th:text="${task.title}"
+                    th:classappend="${task.status == 'COMPLETED'} ? 'task-strikethrough'"></h1>
+            </div>
+            <div class="task-detail-actions">
+                <a th:href="@{'/task/' + ${task.taskId} + '/edit'}" class="btn btn-outline btn-sm">Edit</a>
+                <form th:action="@{'/deleteTask/' + ${task.taskId}}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Delete this task?')">Delete</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="task-meta-grid">
+            <div class="task-meta-item" th:if="${task.priority != null}">
+                <span class="meta-label">Priority</span>
+                <span class="meta-value priority-badge"
+                      th:text="${task.priority}"
+                      th:classappend="${task.priority == 'CRITICAL'} ? ' priority-critical' :
+                                      task.priority == 'HIGH' ? ' priority-high' : ''"></span>
+            </div>
+            <div class="task-meta-item" th:if="${task.estimatedMinutes != null}">
+                <span class="meta-label">Estimated</span>
+                <span class="meta-value" th:text="${task.estimatedMinutes} + ' min'"></span>
+            </div>
+            <div class="task-meta-item" th:if="${task.actualMinutes != null}">
+                <span class="meta-label">Actual</span>
+                <span class="meta-value" th:text="${task.actualMinutes} + ' min'"></span>
+            </div>
+            <div class="task-meta-item" th:if="${task.dueDate != null}">
+                <span class="meta-label">Due</span>
+                <span class="meta-value" th:text="${task.dueDate}"
+                      th:classappend="${task.overdue} ? ' text-danger'"></span>
+            </div>
+            <div class="task-meta-item" th:if="${task.schedulingType != null}">
+                <span class="meta-label">Type</span>
+                <span class="meta-value" th:text="${task.schedulingType}"></span>
+            </div>
+            <div class="task-meta-item" th:if="${task.completedAt != null}">
+                <span class="meta-label">Completed</span>
+                <span class="meta-value" th:text="${#temporals.format(task.completedAt,'MMM d, yyyy')}"></span>
+            </div>
+        </div>
+
+        <p class="task-description" th:if="${task.description != null}" th:text="${task.description}"></p>
+
+        <div class="task-dod-box" th:if="${task.definitionOfDone != null}">
+            <strong>Done when:</strong> <span th:text="${task.definitionOfDone}"></span>
+        </div>
+    </div>
+
+    <!-- Task actions -->
+    <div class="task-actions-panel" th:if="${task.status != 'COMPLETED'}">
+        <form th:action="@{'/task/' + ${task.taskId} + '/complete'}" method="post" class="complete-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="form-row">
+                <div class="form-group form-col">
+                    <label for="actualMinutes">Actual time spent (min)</label>
+                    <input type="number" id="actualMinutes" name="actualMinutes" min="1" class="form-control"
+                           th:placeholder="${task.estimatedMinutes}">
+                </div>
+                <div class="form-group form-col-wide">
+                    <label for="completionNote">Completion note</label>
+                    <input type="text" id="completionNote" name="completionNote" class="form-control"
+                           placeholder="Optional note about what you did">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success">Mark complete</button>
+        </form>
+
+        <div class="quick-actions">
+            <form th:action="@{'/task/' + ${task.taskId} + '/status'}" method="post" style="display:inline"
+                  th:if="${task.status != 'IN_PROGRESS'}">
+                <input type="hidden" name="status" value="IN_PROGRESS"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-primary btn-sm">Start</button>
+            </form>
+            <form th:action="@{'/task/' + ${task.taskId} + '/status'}" method="post" style="display:inline">
+                <input type="hidden" name="status" value="DEFERRED"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-outline btn-sm">Defer</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="task-actions-panel" th:if="${task.status == 'COMPLETED'}">
+        <form th:action="@{'/task/' + ${task.taskId} + '/reopen'}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-outline btn-sm">Reopen task</button>
+        </form>
+    </div>
+
+    <!-- Subtasks -->
+    <section class="subtask-section" th:if="${!subtasks.isEmpty()}">
+        <h2>Subtasks</h2>
+        <ul class="task-list-detail">
+            <li th:each="sub : ${subtasks}" class="task-list-row"
+                th:classappend="${sub.status == 'COMPLETED'} ? 'task-done'">
+                <div class="task-row-body">
+                    <a th:href="@{'/task/' + ${sub.taskId}}" class="task-title-link"
+                       th:text="${sub.title}"
+                       th:classappend="${sub.status == 'COMPLETED'} ? 'task-strikethrough'"></a>
+                    <div class="task-meta-row">
+                        <span th:replace="fragments :: status-badge(${sub.status})"></span>
+                        <span class="task-est-label" th:if="${sub.estimatedMinutes != null}"
+                              th:text="${sub.estimatedMinutes} + ' min'"></span>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <div class="back-link">
+        <a th:href="@{'/goal/' + ${goal.goalId}}">&#8592; Back to goal</a>
+    </div>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
+</body>
+</html>

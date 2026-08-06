@@ -2,70 +2,93 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Create</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach — New Goal</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body>
-    <div class="container">
-        <div th:replace="fragments :: top-bar"></div>
-            <h2>Set Your Goals!</h2>
-    		<p>Goal setting is an integral part of academic and personal development. Articulating your goals helps transform nebulous desires into actionable items. As you fill out this form, think carefully about what you wish to accomplish and how you plan to do it.</p>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
 
-            <form th:action="@{/saveGoal}" th:object="${goal}" method="post" class="login-container">
-                 <div class="form-group">
-                     <label th:text="${goal.goalName}"></label>
-                 </div>
-                <div class="form-group">
-		            <label for="goalName">Give your goal a name:</label> <br>
-		            <p class="help-text">Choose a descriptive yet concise name for your goal. It should be something that instantly reminds you of what you want to achieve.</p>		            
-		            <input type="text" id="goalName" th:field="*{goalName}" required>
-		        </div>
-		        <div class="form-group">
-		            <label for="goalImportance">Why is this goal important to you:</label> <br>
-		            <p class="help-text">This field helps you articulate your motivation. Knowing why you are pursuing a goal can fuel your dedication to achieving it.</p>		            
-		            <input type="text" id="goalImportance" th:field="*{goalImportance}" required>
-		        </div>
-		        <div class="form-group">
-		            <label>By when do you want to achieve this goal:</label> <br>
-		            <p class="help-text">Setting a deadline can add a sense of urgency and focus. Make it realistic but challenging.</p>
-			         <select  id="year" th:field="*{year}" required>
-					    <option value="0">Year</option>
-					    <option value="2022">2022</option>
-					    <option value="2023">2023</option>
-					    <option value="2024">2024</option>
-					    <option value="2025">2025</option>
-					    <option value="2026">2026</option>
-					    <option value="2027">2027</option>
-					    <option value="2028">2028</option>
-					    <option value="2029">2029</option>
-					    <option value="2030">2030</option>
-					</select>   
-					<select id="month" th:field="*{monthNumber}">
-    					<option value="0">month</option>
-					    <option value="1">January</option>
-					    <option value="2">February</option>
-					    <option value="3">March</option>
-					    <option value="4">April</option>
-					    <option value="5">May</option>
-					    <option value="6">June</option>
-					    <option value="7">July</option>
-					    <option value="8">August</option>
-					    <option value="9">September</option>
-					    <option value="10">October</option>
-					    <option value="11">November</option>
-					    <option value="12">December</option>
-					</select>
-		        </div>
-		        <div class="form-group">
-		            <label for="prepStartMonths">How many months ahead do you think you should start preparing for this goal:</label> <br>
-		            <p class="help-text">Think about the preparatory steps required to achieve your goal. Calculate the time needed for each and sum it up.</p>
-		            <input type="text" id="prepStartMonths" th:field="*{prepStartMonths}" required>
-		        </div>
-                 
-                <button type="submit">Submit</button>
-            </form>
-        </div>
+<main class="app-main">
+    <div class="page-header">
+        <h1 class="page-title">Create a goal</h1>
+        <a href="/goals" class="btn btn-outline">Cancel</a>
+    </div>
+
+    <div class="form-card">
+        <form th:action="@{/saveGoal}" th:object="${goal}" method="post" novalidate>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="form-group">
+                <label for="title">Goal title <span class="required">*</span></label>
+                <p class="help-text">A concise, outcome-focused description. Example: "Get a new engineering leadership role."</p>
+                <input type="text" id="title" th:field="*{title}"
+                       maxlength="120" required class="form-control"
+                       placeholder="What do you want to achieve?">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Why this goal matters</label>
+                <p class="help-text">Your motivation. This helps Coach give you relevant reminders.</p>
+                <textarea id="description" th:field="*{description}"
+                          maxlength="2000" rows="3" class="form-control"
+                          placeholder="Optional — what's your motivation?"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-col">
+                    <label for="targetDate">Target date <span class="required">*</span></label>
+                    <p class="help-text">When do you want to achieve this?</p>
+                    <input type="date" id="targetDate" th:field="*{targetDate}"
+                           required class="form-control">
+                </div>
+
+                <div class="form-group form-col">
+                    <label for="weeklyCapacityMinutes">Weekly capacity (minutes) <span class="required">*</span></label>
+                    <p class="help-text">How many minutes per week can you realistically spend on this goal?</p>
+                    <input type="number" id="weeklyCapacityMinutes" th:field="*{weeklyCapacityMinutes}"
+                           min="30" max="4200" required class="form-control"
+                           placeholder="e.g. 300 (5 hours)">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-col">
+                    <label for="priority">Priority</label>
+                    <select id="priority" th:field="*{priority}" class="form-control">
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM" selected>Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="CRITICAL">Critical</option>
+                    </select>
+                </div>
+
+                <div class="form-group form-col">
+                    <label for="status">Status</label>
+                    <select id="status" th:field="*{status}" class="form-control">
+                        <option value="DRAFT">Draft</option>
+                        <option value="ACTIVE" selected>Active</option>
+                        <option value="PLANNING">Planning</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="successCriteria">Success criteria</label>
+                <p class="help-text">How will you know you've achieved this goal?</p>
+                <textarea id="successCriteria" th:field="*{successCriteria}"
+                          maxlength="1000" rows="2" class="form-control"
+                          placeholder="Optional — what does success look like?"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save goal</button>
+                <a href="/goals" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
 </body>
 </html>
-
