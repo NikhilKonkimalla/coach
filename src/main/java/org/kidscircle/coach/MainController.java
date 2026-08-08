@@ -115,8 +115,7 @@ public class MainController extends BaseController {
         goal.setUserId(user.getUserId());
         if (goal.getStatus() == null) goal.setStatus("ACTIVE");
         goalService.saveGoal(goal);
-        ra.addFlashAttribute("success", "Goal saved.");
-        return "redirect:/goals";
+        return "redirect:/goal/" + goal.getGoalId() + "/suggest-tasks";
     }
 
     @GetMapping("/showFormForUpdate/{id}")
@@ -383,13 +382,6 @@ public class MainController extends BaseController {
     }
 
     // ─── Helpers ────────────────────────────────────────────────
-
-    private void assertOwnership(Long resourceUserId, Principal principal) {
-        User current = getCurrentUser(principal);
-        if (!current.getUserId().equals(resourceUserId)) {
-            throw new SecurityException("Access denied");
-        }
-    }
 
     @ModelAttribute("potentialGoals")
     public List<PotentialGoal> getPotentialGoals() {

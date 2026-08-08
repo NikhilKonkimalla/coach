@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach — AI Task Suggestions</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
+
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">AI-suggested tasks</h1>
+            <p class="page-subtitle">
+                For goal: <strong th:text="${goal.title}"></strong>
+            </p>
+        </div>
+    </div>
+
+    <p class="help-text" style="margin-bottom: 1.5rem;">
+        Review the suggestions below. Uncheck any you don't want, edit titles or estimates, then click <strong>Save selected tasks</strong>.
+    </p>
+
+    <form th:action="@{'/goal/' + ${goal.goalId} + '/accept-tasks'}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" name="count" th:value="${count}"/>
+
+        <div class="suggest-task-list">
+            <div th:each="task, iter : ${suggestions}" class="suggest-task-card">
+                <div class="suggest-task-header">
+                    <label class="suggest-check-label">
+                        <input type="checkbox" name="include" th:value="${iter.index}" checked/>
+                        <span class="suggest-check-text">Include this task</span>
+                    </label>
+                    <select th:name="'priority_' + ${iter.index}" class="form-control-sm priority-select">
+                        <option value="HIGH"   th:selected="${task.priority == 'HIGH'}">High</option>
+                        <option value="MEDIUM" th:selected="${task.priority == 'MEDIUM'}">Medium</option>
+                        <option value="LOW"    th:selected="${task.priority == 'LOW'}">Low</option>
+                    </select>
+                </div>
+
+                <div class="suggest-task-body">
+                    <input type="text"
+                           th:name="'title_' + ${iter.index}"
+                           th:value="${task.title}"
+                           class="form-control suggest-title-input"
+                           maxlength="200" required/>
+
+                    <textarea th:name="'description_' + ${iter.index}"
+                              class="form-control suggest-desc-input"
+                              rows="2"
+                              th:text="${task.description}"></textarea>
+
+                    <div class="suggest-task-meta">
+                        <label class="suggest-meta-label">
+                            Est. minutes
+                            <input type="number"
+                                   th:name="'est_' + ${iter.index}"
+                                   th:value="${task.estimatedMinutes}"
+                                   min="1" class="form-control-sm form-control-narrow"/>
+                        </label>
+                        <label class="suggest-meta-label" style="flex:1">
+                            Definition of done
+                            <input type="text"
+                                   th:name="'dod_' + ${iter.index}"
+                                   th:value="${task.definitionOfDone}"
+                                   class="form-control-sm"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions" style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">Save selected tasks</button>
+            <a th:href="@{'/goal/' + ${goal.goalId}}" class="btn btn-outline">Skip, I'll add tasks manually</a>
+        </div>
+    </form>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
+</body>
+</html>

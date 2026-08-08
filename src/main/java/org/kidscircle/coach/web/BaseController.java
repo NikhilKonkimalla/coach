@@ -15,4 +15,11 @@ public abstract class BaseController {
         if (principal == null) throw new IllegalStateException("No authenticated user");
         return userRepository.findByEmail(principal.getName());
     }
+
+    protected void assertOwnership(Long resourceUserId, Principal principal) {
+        User current = getCurrentUser(principal);
+        if (!current.getUserId().equals(resourceUserId)) {
+            throw new SecurityException("Access denied");
+        }
+    }
 }
