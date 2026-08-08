@@ -1,5 +1,6 @@
 package org.kidscircle.coach.model;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
@@ -23,6 +24,7 @@ public class Milestone {
 
     private Integer sequence = 0;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "target_date")
     private LocalDate targetDate;
 

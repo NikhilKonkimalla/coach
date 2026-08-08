@@ -57,8 +57,7 @@
                     <li th:each="task : ${tasksByGoal[goal.goalId]}" class="task-item"
                         th:classappend="${task.status == 'COMPLETED'} ? 'task-done'">
                         <span class="task-status-dot"
-                              th:classappend="${task.status == 'COMPLETED'} ? 'dot-done' :
-                                              task.overdue ? 'dot-overdue' : 'dot-ready'"></span>
+                              th:classappend="${task.status == 'COMPLETED' ? 'dot-done' : (task.overdue ? 'dot-overdue' : 'dot-ready')}"></span>
                         <span class="task-name" th:text="${task.title}"
                               th:classappend="${task.status == 'COMPLETED'} ? 'task-strikethrough'"></span>
                         <span class="task-est" th:if="${task.estimatedMinutes != null}"

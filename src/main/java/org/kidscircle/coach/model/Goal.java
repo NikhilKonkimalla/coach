@@ -1,5 +1,6 @@
 package org.kidscircle.coach.model;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -36,6 +37,7 @@ public class Goal {
     @Column(name = "status")
     private String status = "DRAFT";
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "target_date")
     private LocalDate targetDate;
 
@@ -53,6 +55,7 @@ public class Goal {
 
     private String category;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "earliest_start_date")
     private LocalDate earliestStartDate;
 

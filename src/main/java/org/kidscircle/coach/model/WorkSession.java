@@ -1,5 +1,6 @@
 package org.kidscircle.coach.model;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ public class WorkSession {
     private Long goalId;
     private Long taskId;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "scheduled_date")
     private LocalDate scheduledDate;
 
