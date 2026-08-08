@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach — This Week</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
+
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">This week</h1>
+            <p class="page-subtitle"
+               th:text="${weekStart} + ' — ' + ${weekEnd}"></p>
+        </div>
+        <div class="week-nav">
+            <a th:href="@{/week(weekStart=${prevWeek})}" class="btn btn-outline btn-sm">&#8592; Previous</a>
+            <a href="/week" class="btn btn-outline btn-sm">Current week</a>
+            <a th:href="@{/week(weekStart=${nextWeek})}" class="btn btn-outline btn-sm">Next &#8594;</a>
+        </div>
+    </div>
+
+    <!-- Capacity summary -->
+    <div class="capacity-summary">
+        <div class="capacity-item">
+            <span class="capacity-value" th:text="${weeklyCapacity}">0</span>
+            <span class="capacity-label">min/week capacity</span>
+        </div>
+        <div class="capacity-item">
+            <span class="capacity-value" th:text="${scheduledMinutes}">0</span>
+            <span class="capacity-label">min scheduled</span>
+        </div>
+        <div class="capacity-item" th:classappend="${remainingMinutes <= 0} ? 'capacity-over'">
+            <span class="capacity-value" th:text="${remainingMinutes}">0</span>
+            <span class="capacity-label">min remaining</span>
+        </div>
+        <div class="capacity-bar-wrap">
+            <div class="capacity-bar-fill"
+                 th:style="'width:' + ${weeklyCapacity > 0 ? (scheduledMinutes * 100 / weeklyCapacity) : 0} + '%'"
+                 th:classappend="${scheduledMinutes > weeklyCapacity} ? 'capacity-bar-over'"></div>
+        </div>
+    </div>
+
+    <div class="week-layout">
+
+        <!-- Day columns -->
+        <div class="week-columns">
+            <div th:each="day : ${days}" class="week-day-col"
+                 th:classappend="${day.equals(T(java.time.LocalDate).now())} ? 'week-day-today'">
+                <div class="week-day-header">
+                    <span class="week-day-name" th:text="${#temporals.format(day,'EEE')}"></span>
+                    <span class="week-day-num" th:text="${#temporals.format(day,'d')}"></span>
+                </div>
+
+                <!-- Tasks due this day -->
+                <div th:if="${tasksByDay[day] != null}">
+                    <div th:each="task : ${tasksByDay[day]}" class="week-task-chip"
+                         th:classappend="${task.status == 'COMPLETED'} ? 'chip-done'">
+                        <span th:text="${task.title}" class="chip-title"></span>
+                        <span th:if="${task.estimatedMinutes != null}" class="chip-est"
+                              th:text="${task.estimatedMinutes} + 'm'"></span>
+                    </div>
+                </div>
+
+                <!-- Work sessions this day -->
+                <div th:if="${sessionsByDay[day] != null}">
+                    <div th:each="s : ${sessionsByDay[day]}" class="week-session-chip">
+                        <span class="chip-title"
+                              th:text="${s.plannedMinutes} + ' min session'"></span>
+                        <a th:href="@{'/week/remove-session/' + ${s.sessionId}}"
+                           class="chip-remove"
+                           onclick="return confirm('Remove this session?')">&#215;</a>
+                    </div>
+                </div>
+
+                <!-- Add to this day form -->
+                <div class="add-to-day">
+                    <button type="button" class="add-day-btn"
+                            th:onclick="'showScheduleForm(' + ${day} + ')'">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backlog sidebar -->
+        <aside class="week-backlog">
+            <h2>Ready to schedule</h2>
+            <p class="help-text" th:if="${!backlog.isEmpty()}">
+                Drag or click to schedule a task for a specific day.
+            </p>
+
+            <div th:if="${!backlog.isEmpty()}">
+                <div th:each="task : ${backlog}" class="backlog-task-card">
+                    <div class="backlog-task-header">
+                        <span class="backlog-task-title" th:text="${task.title}"></span>
+                        <span th:replace="fragments :: status-badge(${task.priority})"></span>
+                    </div>
+                    <div class="backlog-task-meta">
+                        <span class="goal-chip" th:if="${goalTitles[task.goalId] != null}"
+                              th:text="${goalTitles[task.goalId]}"></span>
+                        <span class="task-est-label" th:if="${task.estimatedMinutes != null}"
+                              th:text="${task.estimatedMinutes} + ' min'"></span>
+                    </div>
+
+                    <!-- Schedule form -->
+                    <form th:action="@{/week/schedule-task}" method="post" class="schedule-inline-form">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="taskId" th:value="${task.taskId}"/>
+                        <div class="form-row-compact">
+                            <input type="date" name="scheduledDate" required class="form-control-sm"
+                                   th:min="${weekStart}" th:max="${weekEnd}">
+                            <input type="number" name="plannedMinutes" placeholder="min"
+                                   th:value="${task.estimatedMinutes}" min="1" class="form-control-sm form-control-narrow">
+                            <button type="submit" class="btn btn-primary btn-xs">Schedule</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="empty-state" th:if="${backlog.isEmpty()}">
+                <p>No tasks ready to schedule.</p>
+                <a href="/goals" class="btn btn-outline btn-sm">Add tasks to a goal</a>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
+</body>
+</html>

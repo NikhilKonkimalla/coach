@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Coach — ' + ${goal.title}">Coach — Goal</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
+
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
+
+    <!-- Goal header -->
+    <div class="goal-detail-header">
+        <div class="goal-detail-title-row">
+            <div>
+                <span th:replace="fragments :: status-badge(${goal.status})"></span>
+                <h1 class="page-title" th:text="${goal.title}"></h1>
+            </div>
+            <div class="goal-detail-actions">
+                <a th:href="@{'/showFormForUpdate/' + ${goal.goalId}}" class="btn btn-outline btn-sm">Edit goal</a>
+                <form th:action="@{'/deleteGoal/' + ${goal.goalId}}" method="post" style="display:inline"
+                      onsubmit="return confirm('Delete this goal and all its tasks?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="goal-meta-row">
+            <span class="goal-meta-item" th:if="${goal.targetDate != null}">
+                Target: <strong th:text="${goal.targetDate}"></strong>
+            </span>
+            <span class="goal-meta-item" th:if="${goal.weeklyCapacityMinutes != null}">
+                <strong th:text="${goal.weeklyCapacityMinutes}"></strong> min/week
+            </span>
+            <span class="goal-meta-item" th:if="${goal.priority != null}">
+                Priority: <strong th:text="${goal.priority}"></strong>
+            </span>
+        </div>
+
+        <p class="goal-description" th:if="${goal.description != null}" th:text="${goal.description}"></p>
+        <p class="goal-description" th:if="${goal.successCriteria != null}">
+            <strong>Success: </strong><span th:text="${goal.successCriteria}"></span>
+        </p>
+
+        <!-- Progress bar -->
+        <div class="progress-row">
+            <span class="progress-label" th:text="${progress} + '% complete'"></span>
+            <div th:replace="fragments :: progress-bar(${progress})"></div>
+        </div>
+
+        <!-- Feasibility -->
+        <div th:replace="fragments :: feasibility-warning(${feasibility})"></div>
+
+        <!-- Quick status actions -->
+        <div class="status-actions" th:if="${goal.status != 'COMPLETED' and goal.status != 'ABANDONED'}">
+            <form th:action="@{'/goal/' + ${goal.goalId} + '/status'}" method="post" style="display:inline"
+                  th:if="${goal.status == 'ACTIVE'}">
+                <input type="hidden" name="status" value="PAUSED"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-outline btn-sm">Pause goal</button>
+            </form>
+            <form th:action="@{'/goal/' + ${goal.goalId} + '/status'}" method="post" style="display:inline"
+                  th:if="${goal.status == 'PAUSED' or goal.status == 'DRAFT'}">
+                <input type="hidden" name="status" value="ACTIVE"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-primary btn-sm">Activate</button>
+            </form>
+            <form th:action="@{'/goal/' + ${goal.goalId} + '/status'}" method="post" style="display:inline">
+                <input type="hidden" name="status" value="COMPLETED"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-success btn-sm"
+                        onclick="return confirm('Mark this goal as complete?')">Mark complete</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+
+        <!-- Tasks panel -->
+        <section class="detail-panel">
+            <div class="panel-header">
+                <h2>Tasks</h2>
+                <button type="button" class="btn btn-primary btn-sm" onclick="togglePanel('add-task-panel')">+ Add task</button>
+            </div>
+
+            <!-- Add task form (hidden by default) -->
+            <div id="add-task-panel" class="inline-form-panel" style="display:none">
+                <form th:action="@{/saveTask}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="goalId" th:value="${goal.goalId}"/>
+                    <div class="form-row">
+                        <div class="form-group form-col-wide">
+                            <label for="taskTitle">Task title</label>
+                            <input type="text" id="taskTitle" name="title" required class="form-control"
+                                   placeholder="What needs to be done?">
+                        </div>
+                        <div class="form-group form-col-narrow">
+                            <label for="taskEst">Est. minutes</label>
+                            <input type="number" id="taskEst" name="estimatedMinutes" min="1" class="form-control"
+                                   placeholder="60">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group form-col">
+                            <label for="taskDue">Due date</label>
+                            <input type="date" id="taskDue" name="dueDate" class="form-control">
+                        </div>
+                        <div class="form-group form-col">
+                            <label for="taskPriority">Priority</label>
+                            <select id="taskPriority" name="priority" class="form-control">
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM" selected>Medium</option>
+                                <option value="HIGH">High</option>
+                                <option value="CRITICAL">Critical</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-col">
+                            <label for="taskType">Type</label>
+                            <select id="taskType" name="schedulingType" class="form-control">
+                                <option value="CHECKLIST" selected>Checklist</option>
+                                <option value="TIME_BLOCK">Time block</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDod">Definition of done</label>
+                        <input type="text" id="taskDod" name="definitionOfDone" class="form-control"
+                               placeholder="Optional — how will you know this is done?">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-sm">Save task</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="togglePanel('add-task-panel')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Task list -->
+            <ul class="task-list-detail" th:if="${!tasks.isEmpty()}">
+                <li th:each="task : ${tasks}" class="task-list-row"
+                    th:classappend="${task.status == 'COMPLETED'} ? 'task-done' : task.overdue ? 'task-overdue' : ''">
+                    <div class="task-row-left">
+                        <!-- Quick complete checkbox -->
+                        <form th:if="${task.status != 'COMPLETED'}"
+                              th:action="@{'/task/' + ${task.taskId} + '/status'}" method="post" style="display:inline">
+                            <input type="hidden" name="status" value="COMPLETED"/>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="check-btn" title="Mark complete">&#9744;</button>
+                        </form>
+                        <form th:if="${task.status == 'COMPLETED'}"
+                              th:action="@{'/task/' + ${task.taskId} + '/status'}" method="post" style="display:inline">
+                            <input type="hidden" name="status" value="READY"/>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="check-btn check-done" title="Reopen">&#9745;</button>
+                        </form>
+                    </div>
+                    <div class="task-row-body">
+                        <a th:href="@{'/task/' + ${task.taskId}}" class="task-title-link"
+                           th:text="${task.title}"
+                           th:classappend="${task.status == 'COMPLETED'} ? 'task-strikethrough'"></a>
+                        <div class="task-meta-row">
+                            <span th:replace="fragments :: status-badge(${task.status})"></span>
+                            <span class="task-priority priority-badge"
+                                  th:text="${task.priority}"
+                                  th:classappend="${task.priority == 'CRITICAL'} ? ' priority-critical' :
+                                                  task.priority == 'HIGH' ? ' priority-high' : ''"></span>
+                            <span class="task-est-label" th:if="${task.estimatedMinutes != null}"
+                                  th:text="${task.estimatedMinutes} + ' min'"></span>
+                            <span class="task-due-label" th:if="${task.dueDate != null}"
+                                  th:text="'Due ' + ${task.dueDate}"
+                                  th:classappend="${task.overdue} ? ' text-danger'"></span>
+                        </div>
+                        <p class="task-dod" th:if="${task.definitionOfDone != null}"
+                           th:text="'Done when: ' + ${task.definitionOfDone}"></p>
+                    </div>
+                    <div class="task-row-actions">
+                        <a th:href="@{'/task/' + ${task.taskId} + '/edit'}" class="btn btn-outline btn-xs">Edit</a>
+                        <form th:action="@{'/deleteTask/' + ${task.taskId}}" method="post" style="display:inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-danger btn-xs"
+                                    onclick="return confirm('Delete this task?')">&times;</button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+            <div class="empty-state" th:if="${tasks.isEmpty()}">
+                <p>No tasks yet. Add your first task above.</p>
+            </div>
+        </section>
+
+        <!-- Milestones panel -->
+        <section class="detail-panel">
+            <div class="panel-header">
+                <h2>Milestones</h2>
+                <button type="button" class="btn btn-outline btn-sm" onclick="togglePanel('add-milestone-panel')">+ Add milestone</button>
+            </div>
+
+            <div id="add-milestone-panel" class="inline-form-panel" style="display:none">
+                <form th:action="@{'/goal/' + ${goal.goalId} + '/milestone/save'}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="form-row">
+                        <div class="form-group form-col-wide">
+                            <label for="mTitle">Milestone title</label>
+                            <input type="text" id="mTitle" name="title" required class="form-control"
+                                   placeholder="e.g. Résumé ready to send">
+                        </div>
+                        <div class="form-group form-col-narrow">
+                            <label for="mDate">Target date</label>
+                            <input type="date" id="mDate" name="targetDate" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-sm">Save milestone</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="togglePanel('add-milestone-panel')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <ul class="milestone-list" th:if="${!milestones.isEmpty()}">
+                <li th:each="m : ${milestones}" class="milestone-item"
+                    th:classappend="${m.status == 'COMPLETED'} ? 'milestone-done'">
+                    <div class="milestone-marker"
+                         th:classappend="${m.status == 'COMPLETED'} ? 'marker-done'">&#9679;</div>
+                    <div class="milestone-body">
+                        <span class="milestone-title" th:text="${m.title}"></span>
+                        <span class="milestone-date" th:if="${m.targetDate != null}"
+                              th:text="${m.targetDate}"></span>
+                    </div>
+                    <form th:action="@{'/milestone/delete/' + ${m.milestoneId}}" method="post" style="display:inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-danger btn-xs"
+                                onclick="return confirm('Delete milestone?')">&times;</button>
+                    </form>
+                </li>
+            </ul>
+            <div class="empty-state" th:if="${milestones.isEmpty()}">
+                <p>No milestones yet. Add milestones to break this goal into stages.</p>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
+<script>
+function togglePanel(id) {
+    var el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>

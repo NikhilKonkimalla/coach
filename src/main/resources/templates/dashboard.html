@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach — Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
+
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
+
+    <div class="page-header">
+        <h1 class="page-title">
+            Good day, <span th:text="${user.displayName}">there</span>!
+        </h1>
+        <p class="page-subtitle" th:text="${today}"></p>
+    </div>
+
+    <!-- Next Action Card -->
+    <section class="dashboard-section" th:if="${nextAction != null}">
+        <div class="next-action-card">
+            <div class="next-action-header">
+                <span class="next-action-label">Recommended next action</span>
+                <span class="next-action-reason" th:text="${nextAction.reason}"></span>
+            </div>
+            <div class="next-action-body">
+                <strong th:text="${nextAction.task.title}"></strong>
+                <span th:if="${nextAction.task.estimatedMinutes != null}"
+                      class="task-estimate"
+                      th:text="${nextAction.task.estimatedMinutes} + ' min'"></span>
+            </div>
+            <div class="next-action-actions">
+                <form th:action="@{'/task/' + ${nextAction.task.taskId} + '/status'}" method="post" style="display:inline">
+                    <input type="hidden" name="status" value="IN_PROGRESS"/>
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-primary btn-sm">Start task</button>
+                </form>
+                <a th:href="@{'/task/' + ${nextAction.task.taskId}}" class="btn btn-outline btn-sm">View details</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="dashboard-grid">
+
+        <!-- Today's tasks -->
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2>Today</h2>
+                <a href="/today" class="card-link">View all</a>
+            </div>
+            <ul class="item-list" th:if="${!todayTasks.isEmpty()}">
+                <li th:each="task : ${todayTasks}" class="item-list-row"
+                    th:classappend="${task.overdue} ? 'row-overdue'">
+                    <span class="item-title" th:text="${task.title}"></span>
+                    <span class="item-meta" th:if="${task.estimatedMinutes != null}"
+                          th:text="${task.estimatedMinutes} + ' min'"></span>
+                    <a th:href="@{'/task/' + ${task.taskId}}" class="item-action">&#8594;</a>
+                </li>
+            </ul>
+            <div class="empty-state" th:if="${todayTasks.isEmpty()}">
+                <p>Nothing due today.</p>
+                <a href="/week" class="btn btn-outline btn-sm">Plan the week</a>
+            </div>
+        </section>
+
+        <!-- Active goals -->
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2>Active goals</h2>
+                <a href="/goals" class="card-link">View all</a>
+            </div>
+            <ul class="item-list" th:if="${!activeGoals.isEmpty()}">
+                <li th:each="goal : ${activeGoals}" class="item-list-row">
+                    <div class="item-content">
+                        <span class="item-title" th:text="${goal.title}"></span>
+                        <span class="item-meta" th:if="${goal.targetDate != null}"
+                              th:text="'Due ' + ${goal.targetDate}"></span>
+                    </div>
+                    <a th:href="@{'/goal/' + ${goal.goalId}}" class="item-action">&#8594;</a>
+                </li>
+            </ul>
+            <div class="empty-state" th:if="${activeGoals.isEmpty()}">
+                <p>What would you like to accomplish?</p>
+                <a href="/showNewGoalForm" class="btn btn-primary btn-sm">Create your first goal</a>
+            </div>
+        </section>
+
+        <!-- This week summary -->
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2>This week</h2>
+                <a href="/week" class="card-link">Open planner</a>
+            </div>
+            <div class="stat-row">
+                <div class="stat-item">
+                    <span class="stat-value" th:text="${weekTaskCount}">0</span>
+                    <span class="stat-label">tasks scheduled</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" th:text="${weekPlannedMinutes}">0</span>
+                    <span class="stat-label">min planned</span>
+                </div>
+            </div>
+            <div class="card-actions">
+                <a href="/week" class="btn btn-outline btn-sm">Plan this week</a>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
+</body>
+</html>
