@@ -49,7 +49,7 @@
 
         <div th:if="${!todayTasks.isEmpty()}">
             <div th:each="task : ${todayTasks}" class="task-card"
-                 th:classappend="${task.status == 'COMPLETED'} ? 'task-card-done' : task.overdue ? 'task-card-overdue' : ''">
+                 th:classappend="${task.status == 'COMPLETED' ? 'task-card-done' : (task.overdue ? 'task-card-overdue' : '')}">
                 <div class="task-card-header">
                     <div class="task-card-left">
                         <!-- Inline complete form -->

@@ -42,8 +42,7 @@
                 <span class="meta-label">Priority</span>
                 <span class="meta-value priority-badge"
                       th:text="${task.priority}"
-                      th:classappend="${task.priority == 'CRITICAL'} ? ' priority-critical' :
-                                      task.priority == 'HIGH' ? ' priority-high' : ''"></span>
+                      th:classappend="${task.priority == 'CRITICAL' ? 'priority-critical' : (task.priority == 'HIGH' ? 'priority-high' : '')}"></span>
             </div>
             <div class="task-meta-item" th:if="${task.estimatedMinutes != null}">
                 <span class="meta-label">Estimated</span>

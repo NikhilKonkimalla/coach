@@ -141,7 +141,7 @@
             <!-- Task list -->
             <ul class="task-list-detail" th:if="${!tasks.isEmpty()}">
                 <li th:each="task : ${tasks}" class="task-list-row"
-                    th:classappend="${task.status == 'COMPLETED'} ? 'task-done' : task.overdue ? 'task-overdue' : ''">
+                    th:classappend="${task.status == 'COMPLETED' ? 'task-done' : (task.overdue ? 'task-overdue' : '')}">
                     <div class="task-row-left">
                         <!-- Quick complete checkbox -->
                         <form th:if="${task.status != 'COMPLETED'}"
@@ -165,8 +165,7 @@
                             <span th:replace="fragments :: status-badge(${task.status})"></span>
                             <span class="task-priority priority-badge"
                                   th:text="${task.priority}"
-                                  th:classappend="${task.priority == 'CRITICAL'} ? ' priority-critical' :
-                                                  task.priority == 'HIGH' ? ' priority-high' : ''"></span>
+                                  th:classappend="${task.priority == 'CRITICAL' ? 'priority-critical' : (task.priority == 'HIGH' ? 'priority-high' : '')}"></span>
                             <span class="task-est-label" th:if="${task.estimatedMinutes != null}"
                                   th:text="${task.estimatedMinutes} + ' min'"></span>
                             <span class="task-due-label" th:if="${task.dueDate != null}"

@@ -1,5 +1,6 @@
 package org.kidscircle.coach.model;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -44,9 +45,11 @@ public class Task {
     @Column(name = "scheduling_type")
     private String schedulingType = "CHECKLIST";
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "due_date")
     private LocalDate dueDate;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "earliest_start_date")
     private LocalDate earliestStartDate;
 

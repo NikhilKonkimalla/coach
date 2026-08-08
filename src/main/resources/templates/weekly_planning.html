@@ -81,7 +81,8 @@
                 <!-- Add to this day form -->
                 <div class="add-to-day">
                     <button type="button" class="add-day-btn"
-                            th:onclick="'showScheduleForm(' + ${day} + ')'">+</button>
+                            th:attr="data-day=${day}"
+                            onclick="showScheduleForm(this.dataset.day)">+</button>
                 </div>
             </div>
         </div>
