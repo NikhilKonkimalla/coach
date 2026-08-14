@@ -77,11 +77,13 @@ public class MainController extends BaseController {
     }
 
     @PostMapping("/survey-submit")
-    public String submitSurvey(Principal principal, @ModelAttribute Survey s) {
+    public String submitSurvey(Principal principal, @ModelAttribute Survey s,
+                               RedirectAttributes ra) {
         User user = getCurrentUser(principal);
         s.setUserId(user.getUserId());
         surveyRepository.save(s);
-        return "redirect:/dashboard";
+        ra.addFlashAttribute("success", "Your profile has been saved.");
+        return "redirect:/survey";
     }
 
     // ─── Goals ──────────────────────────────────────────────────
