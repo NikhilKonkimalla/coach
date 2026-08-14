@@ -13,8 +13,7 @@
         <li><a href="/today"     class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/today'} ? 'active'">Today</a></li>
         <li><a href="/goals"     class="nav-link" th:classappend="${#httpServletRequest.requestURI.startsWith('/goal')} ? 'active'">Goals</a></li>
         <li><a href="/week"      class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/week'} ? 'active'">This Week</a></li>
-        <li><a href="/calendar"  class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/calendar'} ? 'active'">Calendar</a></li>
-        <li><a href="/survey"    class="nav-link">Settings</a></li>
+<li><a href="/survey"    class="nav-link">Settings</a></li>
     </ul>
     <div class="nav-user">
         <span sec:authentication="name" class="nav-username"></span>
@@ -34,9 +33,6 @@
     </a>
     <a href="/week"     class="mobile-nav-item" th:classappend="${#httpServletRequest.requestURI == '/week'} ? 'active'">
         <span class="mobile-nav-icon">&#128197;</span><span class="mobile-nav-label">Week</span>
-    </a>
-    <a href="/calendar" class="mobile-nav-item" th:classappend="${#httpServletRequest.requestURI == '/calendar'} ? 'active'">
-        <span class="mobile-nav-icon">&#128198;</span><span class="mobile-nav-label">Calendar</span>
     </a>
 </nav>
 

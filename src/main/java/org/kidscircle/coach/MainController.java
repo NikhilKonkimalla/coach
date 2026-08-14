@@ -2,8 +2,6 @@ package org.kidscircle.coach;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
@@ -319,57 +317,6 @@ public class MainController extends BaseController {
         return "redirect:" + (goalId != null ? "/goal/" + goalId : "/goals");
     }
 
-    // ─── Calendar (legacy) ──────────────────────────────────────
-
-    @GetMapping("/calendar")
-    public String showCalendar(Principal principal, Model model,
-                               @RequestParam(required = false) Integer year,
-                               @RequestParam(required = false) Integer month) {
-        User user = getCurrentUser(principal);
-        LocalDate now = LocalDate.now();
-        int displayYear = (year != null) ? year : now.getYear();
-        int displayMonth = (month != null) ? month : now.getMonthValue();
-        YearMonth yearMonth = YearMonth.of(displayYear, displayMonth);
-        int daysInMonth = yearMonth.lengthOfMonth();
-        int firstDayOfWeek = yearMonth.atDay(1).getDayOfWeek().getValue() % 7;
-        List<List<Integer>> weeks = new ArrayList<>();
-        List<Integer> week = new ArrayList<>();
-        for (int i = 0; i < firstDayOfWeek; i++) week.add(0);
-        for (int day = 1; day <= daysInMonth; day++) {
-            week.add(day);
-            if (week.size() == 7) { weeks.add(week); week = new ArrayList<>(); }
-        }
-        while (week.size() < 7 && !week.isEmpty()) week.add(0);
-        if (!week.isEmpty()) weeks.add(week);
-        List<Task> tasks = taskService.getTasksForUser(user.getUserId());
-        Map<Integer, List<Task>> tasksByDay = new HashMap<>();
-        for (Task t : tasks) {
-            if (t.getDueDate() != null
-                    && t.getDueDate().getYear() == displayYear
-                    && t.getDueDate().getMonthValue() == displayMonth) {
-                tasksByDay.computeIfAbsent(t.getDueDate().getDayOfMonth(), k -> new ArrayList<>()).add(t);
-            }
-        }
-        List<Goal> goals = goalService.getGoalForUser(user.getUserId());
-        Map<Long, String> goalNames = new HashMap<>();
-        for (Goal g : goals) goalNames.put(g.getGoalId(), g.getTitle());
-        YearMonth prev = yearMonth.minusMonths(1);
-        YearMonth next = yearMonth.plusMonths(1);
-        model.addAttribute("year", displayYear);
-        model.addAttribute("month", displayMonth);
-        model.addAttribute("monthName", yearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
-        model.addAttribute("weeks", weeks);
-        model.addAttribute("tasksByDay", tasksByDay);
-        model.addAttribute("goalNames", goalNames);
-        model.addAttribute("prevYear", prev.getYear());
-        model.addAttribute("prevMonth", prev.getMonthValue());
-        model.addAttribute("nextYear", next.getYear());
-        model.addAttribute("nextMonth", next.getMonthValue());
-        model.addAttribute("todayDay", now.getDayOfMonth());
-        model.addAttribute("todayYear", now.getYear());
-        model.addAttribute("todayMonth", now.getMonthValue());
-        return "calendar";
-    }
 
     @GetMapping("/resources")
     public String resources() {
