@@ -67,18 +67,21 @@ public class OllamaService {
     }
 
     private String buildPrompt(Goal goal) {
-        return "You are a productivity coach helping someone achieve their goal.\n\n"
+        return "You are a productivity coach. Generate tasks for this goal.\n\n"
                 + "Goal: " + goal.getTitle() + "\n"
                 + "Description: " + (goal.getDescription() != null ? goal.getDescription() : "") + "\n"
                 + "Target Date: " + (goal.getTargetDate() != null ? goal.getTargetDate() : "not set") + "\n"
                 + "Success Criteria: " + (goal.getSuccessCriteria() != null ? goal.getSuccessCriteria() : "") + "\n\n"
-                + "Generate 5-7 specific, actionable tasks to accomplish this goal.\n"
-                + "Return ONLY a valid JSON array with no other text. Each element must have exactly these fields:\n"
-                + "- \"title\": string under 150 chars starting with an action verb\n"
-                + "- \"description\": string, 1-2 sentences\n"
-                + "- \"estimatedMinutes\": integer\n"
-                + "- \"priority\": one of \"HIGH\", \"MEDIUM\", \"LOW\"\n"
-                + "- \"definitionOfDone\": string describing how you'll know it's complete\n\n"
+                + "Respond with ONLY a JSON array (no markdown, no explanation). Example format:\n"
+                + "[{\"title\":\"Do X\",\"description\":\"How to do X.\",\"estimatedMinutes\":30,\"priority\":\"HIGH\",\"definitionOfDone\":\"X is done when Y.\"}]\n\n"
+                + "Rules:\n"
+                + "- Output 5 to 7 items\n"
+                + "- title: string, starts with action verb, under 150 chars\n"
+                + "- description: string, 1-2 sentences\n"
+                + "- estimatedMinutes: integer only\n"
+                + "- priority: exactly one of HIGH, MEDIUM, LOW (uppercase)\n"
+                + "- definitionOfDone: string (never an array)\n"
+                + "- No trailing commas. No extra fields. No comments.\n\n"
                 + "/no_think";
     }
 
