@@ -145,7 +145,7 @@ public class MainController extends BaseController {
         return "redirect:/goals";
     }
 
-    @GetMapping("/deleteGoal/{id}")
+    @PostMapping("/deleteGoal/{id}")
     public String deleteGoal(@PathVariable long id, Principal principal, RedirectAttributes ra) {
         Goal goal = goalService.getGoalById(id);
         assertOwnership(goal.getUserId(), principal);
@@ -200,7 +200,7 @@ public class MainController extends BaseController {
         return "redirect:/goal/" + goalId;
     }
 
-    @GetMapping("/milestone/delete/{id}")
+    @PostMapping("/milestone/delete/{id}")
     public String deleteMilestone(@PathVariable long id, Principal principal, RedirectAttributes ra) {
         Milestone m = milestoneService.getMilestoneById(id);
         Goal goal = goalService.getGoalById(m.getGoalId());
@@ -308,7 +308,7 @@ public class MainController extends BaseController {
         return "redirect:" + referer;
     }
 
-    @GetMapping("/deleteTask/{id}")
+    @PostMapping("/deleteTask/{id}")
     public String deleteTask(@PathVariable long id, Principal principal, RedirectAttributes ra) {
         Task task = taskService.getTaskById(id);
         User user = getCurrentUser(principal);

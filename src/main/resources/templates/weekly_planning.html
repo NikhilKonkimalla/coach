@@ -58,8 +58,8 @@
                 </div>
 
                 <!-- Tasks due this day -->
-                <div th:if="${tasksByDay[day] != null}">
-                    <div th:each="task : ${tasksByDay[day]}" class="week-task-chip"
+                <div th:if="${tasksByDay.get(day) != null}">
+                    <div th:each="task : ${tasksByDay.get(day)}" class="week-task-chip"
                          th:classappend="${task.status == 'COMPLETED'} ? 'chip-done'">
                         <span th:text="${task.title}" class="chip-title"></span>
                         <span th:if="${task.estimatedMinutes != null}" class="chip-est"
@@ -68,8 +68,8 @@
                 </div>
 
                 <!-- Work sessions this day -->
-                <div th:if="${sessionsByDay[day] != null}">
-                    <div th:each="s : ${sessionsByDay[day]}" class="week-session-chip">
+                <div th:if="${sessionsByDay.get(day) != null}">
+                    <div th:each="s : ${sessionsByDay.get(day)}" class="week-session-chip">
                         <span class="chip-title"
                               th:text="${s.plannedMinutes} + ' min session'"></span>
                         <a th:href="@{'/week/remove-session/' + ${s.sessionId}}"
