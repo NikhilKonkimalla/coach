@@ -18,6 +18,7 @@ public class AiTaskSuggestion {
     private String description;
     private Integer estimatedMinutes;
     private String priority = "MEDIUM";
+    private String frequency = "ONCE";
 
     // Model sometimes returns this as a JSON array — deserializer handles both
     @JsonDeserialize(using = StringOrArrayDeserializer.class)
@@ -36,6 +37,9 @@ public class AiTaskSuggestion {
 
     public String getPriority() { return priority; }
     public void setPriority(String p) { this.priority = (p != null) ? p.toUpperCase() : "MEDIUM"; }
+
+    public String getFrequency() { return frequency; }
+    public void setFrequency(String f) { this.frequency = (f != null) ? f.toUpperCase() : "ONCE"; }
 
     public String getDefinitionOfDone() { return definitionOfDone; }
     public void setDefinitionOfDone(String definitionOfDone) { this.definitionOfDone = definitionOfDone; }

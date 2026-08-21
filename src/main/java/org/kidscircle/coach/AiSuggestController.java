@@ -76,6 +76,7 @@ public class AiSuggestController extends BaseController {
             task.setDescription(allParams.get("description_" + i));
             task.setDefinitionOfDone(allParams.get("dod_" + i));
             task.setPriority(allParams.getOrDefault("priority_" + i, "MEDIUM"));
+            task.setFrequency(allParams.getOrDefault("frequency_" + i, "ONCE"));
 
             String est = allParams.get("est_" + i);
             if (est != null && !est.isBlank()) {

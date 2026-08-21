@@ -265,6 +265,7 @@ public class MainController extends BaseController {
         task.setPriority(formTask.getPriority());
         task.setDueDate(formTask.getDueDate());
         task.setSchedulingType(formTask.getSchedulingType());
+        task.setFrequency(formTask.getFrequency());
         taskService.saveTask(task);
         ra.addFlashAttribute("success", "Task updated.");
         return "redirect:/task/" + id;

@@ -36,11 +36,19 @@
                         <input type="checkbox" name="include" th:value="${iter.index}" checked/>
                         <span class="suggest-check-text">Include this task</span>
                     </label>
-                    <select th:name="'priority_' + ${iter.index}" class="form-control-sm priority-select">
-                        <option value="HIGH"   th:selected="${task.priority == 'HIGH'}">High</option>
-                        <option value="MEDIUM" th:selected="${task.priority == 'MEDIUM'}">Medium</option>
-                        <option value="LOW"    th:selected="${task.priority == 'LOW'}">Low</option>
-                    </select>
+                    <div class="suggest-select-group">
+                        <select th:name="'priority_' + ${iter.index}" class="form-control-sm priority-select">
+                            <option value="HIGH"   th:selected="${task.priority == 'HIGH'}">High</option>
+                            <option value="MEDIUM" th:selected="${task.priority == 'MEDIUM'}">Medium</option>
+                            <option value="LOW"    th:selected="${task.priority == 'LOW'}">Low</option>
+                        </select>
+                        <select th:name="'frequency_' + ${iter.index}" class="form-control-sm priority-select">
+                            <option value="ONCE"    th:selected="${task.frequency == 'ONCE'}">One time</option>
+                            <option value="DAILY"   th:selected="${task.frequency == 'DAILY'}">Daily</option>
+                            <option value="WEEKLY"  th:selected="${task.frequency == 'WEEKLY'}">Weekly</option>
+                            <option value="MONTHLY" th:selected="${task.frequency == 'MONTHLY'}">Monthly</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="suggest-task-body">

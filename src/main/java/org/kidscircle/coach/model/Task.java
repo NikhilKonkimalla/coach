@@ -45,6 +45,9 @@ public class Task {
     @Column(name = "scheduling_type")
     private String schedulingType = "CHECKLIST";
 
+    // ONCE, DAILY, WEEKLY, or MONTHLY — how often this task repeats
+    private String frequency = "ONCE";
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "due_date")
     private LocalDate dueDate;
@@ -79,6 +82,7 @@ public class Task {
         if (priority == null) priority = "MEDIUM";
         if (source == null) source = "USER";
         if (schedulingType == null) schedulingType = "CHECKLIST";
+        if (frequency == null) frequency = "ONCE";
     }
 
     @PreUpdate
@@ -138,6 +142,9 @@ public class Task {
 
     public String getSchedulingType() { return schedulingType; }
     public void setSchedulingType(String schedulingType) { this.schedulingType = schedulingType; }
+
+    public String getFrequency() { return frequency; }
+    public void setFrequency(String frequency) { this.frequency = frequency; }
 
     public LocalDate getDueDate() { return dueDate; }
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }

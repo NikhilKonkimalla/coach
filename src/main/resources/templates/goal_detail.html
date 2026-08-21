@@ -125,6 +125,15 @@
                                 <option value="TIME_BLOCK">Time block</option>
                             </select>
                         </div>
+                        <div class="form-group form-col">
+                            <label for="taskFrequency">Frequency</label>
+                            <select id="taskFrequency" name="frequency" class="form-control">
+                                <option value="ONCE" selected>One time</option>
+                                <option value="DAILY">Daily</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="MONTHLY">Monthly</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="taskDod">Definition of done</label>
@@ -168,6 +177,8 @@
                                   th:classappend="${task.priority == 'CRITICAL' ? 'priority-critical' : (task.priority == 'HIGH' ? 'priority-high' : '')}"></span>
                             <span class="task-est-label" th:if="${task.estimatedMinutes != null}"
                                   th:text="${task.estimatedMinutes} + ' min'"></span>
+                            <span class="task-freq-label" th:if="${task.frequency != null and task.frequency != 'ONCE'}"
+                                  th:text="${task.frequency}"></span>
                             <span class="task-due-label" th:if="${task.dueDate != null}"
                                   th:text="'Due ' + ${task.dueDate}"
                                   th:classappend="${task.overdue} ? ' text-danger'"></span>
