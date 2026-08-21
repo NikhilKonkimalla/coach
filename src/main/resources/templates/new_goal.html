@@ -16,7 +16,7 @@
     </div>
 
     <div class="form-card">
-        <form th:action="@{/saveGoal}" th:object="${goal}" method="post" novalidate>
+        <form th:action="@{/saveGoal}" th:object="${goal}" method="post" novalidate class="form-loading">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
             <div class="form-group">
@@ -82,7 +82,8 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Save goal</button>
+                <button type="submit" class="btn btn-primary"
+                        data-loading-text="Saving &amp; generating task suggestions…">Save goal</button>
                 <a href="/goals" class="btn btn-outline">Cancel</a>
             </div>
         </form>
@@ -90,5 +91,6 @@
 </main>
 
 <div th:replace="fragments :: mobile-nav"></div>
+<script th:src="@{/js/script.js}"></script>
 </body>
 </html>
