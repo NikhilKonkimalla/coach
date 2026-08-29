@@ -39,6 +39,10 @@
                     <label for="targetDate">Target date <span class="required">*</span></label>
                     <input type="date" id="targetDate" th:field="*{targetDate}"
                            required class="form-control">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="lifelong" th:field="*{lifelong}" data-disables="targetDate">
+                        This is a lifelong goal (no end date)
+                    </label>
                 </div>
 
                 <div class="form-group form-col">
@@ -93,5 +97,6 @@
 </main>
 
 <div th:replace="fragments :: mobile-nav"></div>
+<script th:src="@{/js/script.js}"></script>
 </body>
 </html>

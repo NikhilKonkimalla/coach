@@ -30,7 +30,10 @@
         </div>
 
         <div class="goal-meta-row">
-            <span class="goal-meta-item" th:if="${goal.targetDate != null}">
+            <span class="goal-meta-item" th:if="${goal.lifelong == true}">
+                <strong>Lifelong goal</strong>
+            </span>
+            <span class="goal-meta-item" th:if="${goal.lifelong != true and goal.targetDate != null}">
                 Target: <strong th:text="${goal.targetDate}"></strong>
             </span>
             <span class="goal-meta-item" th:if="${goal.weeklyCapacityMinutes != null}">

@@ -111,11 +111,23 @@ public class MainController extends BaseController {
     public String saveGoal(Principal principal,
                            @ModelAttribute("goal") Goal goal,
                            RedirectAttributes ra) {
+        if (!hasTargetDateOrIsLifelong(goal, ra)) {
+            return "redirect:/showNewGoalForm";
+        }
         User user = getCurrentUser(principal);
         goal.setUserId(user.getUserId());
         if (goal.getStatus() == null) goal.setStatus("ACTIVE");
+        if (Boolean.TRUE.equals(goal.getLifelong())) goal.setTargetDate(null);
         goalService.saveGoal(goal);
         return "redirect:/goal/" + goal.getGoalId() + "/suggest-tasks";
+    }
+
+    private boolean hasTargetDateOrIsLifelong(Goal goal, RedirectAttributes ra) {
+        if (!Boolean.TRUE.equals(goal.getLifelong()) && goal.getTargetDate() == null) {
+            ra.addFlashAttribute("error", "Set a target date, or mark this goal as lifelong.");
+            return false;
+        }
+        return true;
     }
 
     @GetMapping("/showFormForUpdate/{id}")
@@ -132,9 +144,13 @@ public class MainController extends BaseController {
                              RedirectAttributes ra) {
         Goal existing = goalService.getGoalById(goal.getGoalId());
         assertOwnership(existing.getUserId(), principal);
+        if (!hasTargetDateOrIsLifelong(goal, ra)) {
+            return "redirect:/showFormForUpdate/" + goal.getGoalId();
+        }
         existing.setTitle(goal.getTitle());
         existing.setDescription(goal.getDescription());
-        existing.setTargetDate(goal.getTargetDate());
+        existing.setLifelong(Boolean.TRUE.equals(goal.getLifelong()));
+        existing.setTargetDate(Boolean.TRUE.equals(goal.getLifelong()) ? null : goal.getTargetDate());
         existing.setWeeklyCapacityMinutes(goal.getWeeklyCapacityMinutes());
         existing.setPriority(goal.getPriority());
         existing.setSuccessCriteria(goal.getSuccessCriteria());

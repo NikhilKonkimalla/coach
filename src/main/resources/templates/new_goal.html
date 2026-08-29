@@ -10,6 +10,8 @@
 <div th:replace="fragments :: nav"></div>
 
 <main class="app-main">
+    <div th:replace="fragments :: flash"></div>
+
     <div class="page-header">
         <h1 class="page-title">Create a goal</h1>
         <a href="/goals" class="btn btn-outline">Cancel</a>
@@ -38,9 +40,13 @@
             <div class="form-row">
                 <div class="form-group form-col">
                     <label for="targetDate">Target date <span class="required">*</span></label>
-                    <p class="help-text">When do you want to achieve this?</p>
+                    <p class="help-text">When do you want to achieve this? Or mark it lifelong if it has no end date.</p>
                     <input type="date" id="targetDate" th:field="*{targetDate}"
                            required class="form-control">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="lifelong" th:field="*{lifelong}" data-disables="targetDate">
+                        This is a lifelong goal (no end date)
+                    </label>
                 </div>
 
                 <div class="form-group form-col">

@@ -240,6 +240,10 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 .required { color: var(--color-danger); }
 .help-text { font-size: .8rem; color: var(--color-text-muted); margin: 2px 0 6px; font-style: italic; }
 
+.checkbox-label { display: flex !important; align-items: center; gap: 6px; margin-top: 8px;
+  font-size: .8rem !important; font-weight: 400 !important; color: var(--color-text-muted); cursor: pointer; }
+.checkbox-label input[type=checkbox] { width: auto; margin: 0; }
+
 /* ── Page header ──────────────────────────────────────────── */
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
 .page-title  { font-size: 1.6rem; font-weight: 700; margin: 0; }

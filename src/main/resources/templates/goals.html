@@ -26,7 +26,8 @@
                     <span th:replace="fragments :: status-badge(${goal.status})"></span>
                 </div>
                 <div class="goal-card-actions">
-                    <span class="goal-date" th:if="${goal.targetDate != null}"
+                    <span class="goal-date" th:if="${goal.lifelong == true}">Lifelong</span>
+                    <span class="goal-date" th:if="${goal.lifelong != true and goal.targetDate != null}"
                           th:text="'Due ' + ${goal.targetDate}"></span>
                     <a th:href="@{'/goal/' + ${goal.goalId}}" class="btn btn-outline btn-sm">Open</a>
                     <a th:href="@{'/showFormForUpdate/' + ${goal.goalId}}" class="btn btn-outline btn-sm">Edit</a>

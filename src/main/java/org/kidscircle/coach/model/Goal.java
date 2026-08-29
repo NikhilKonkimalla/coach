@@ -41,6 +41,9 @@ public class Goal {
     @Column(name = "target_date")
     private LocalDate targetDate;
 
+    // True for open-ended goals with no target date (e.g. "Stay healthy")
+    private Boolean lifelong = false;
+
     @Column(name = "weekly_capacity_minutes")
     private Integer weeklyCapacityMinutes = 300;
 
@@ -73,6 +76,7 @@ public class Goal {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (status == null) status = "DRAFT";
+        if (lifelong == null) lifelong = false;
         if (targetDate == null && year != null && year > 0 && monthNumber != null && monthNumber > 0) {
             targetDate = LocalDate.of(year, monthNumber, 1).withDayOfMonth(
                     LocalDate.of(year, monthNumber, 1).lengthOfMonth());
@@ -123,6 +127,9 @@ public class Goal {
 
     public LocalDate getTargetDate() { return targetDate; }
     public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
+
+    public Boolean getLifelong() { return lifelong; }
+    public void setLifelong(Boolean lifelong) { this.lifelong = lifelong; }
 
     public Integer getWeeklyCapacityMinutes() { return weeklyCapacityMinutes; }
     public void setWeeklyCapacityMinutes(Integer weeklyCapacityMinutes) { this.weeklyCapacityMinutes = weeklyCapacityMinutes; }
