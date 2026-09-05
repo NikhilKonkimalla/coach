@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach — AI Task Suggestions</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
+
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">AI-suggested tasks</h1>
+            <p class="page-subtitle">
+                For goal: <strong th:text="${goal.title}"></strong>
+            </p>
+        </div>
+    </div>
+
+    <p class="help-text" style="margin-bottom: 1.5rem;">
+        Review the suggested tasks for each milestone below. Uncheck any you don't want, edit as needed,
+        then click <strong>Save selected tasks</strong>.
+    </p>
+
+    <form th:action="@{'/goal/' + ${goal.goalId} + '/accept-milestone-tasks'}" method="post" class="form-loading">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" name="count" th:value="${count}"/>
+
+        <div th:each="m : ${milestones}" class="milestone-suggest-group">
+            <h2 class="milestone-suggest-title" th:text="${m.title}"></h2>
+
+            <div class="suggest-task-list">
+                <div th:each="task : ${suggestionsByMilestone.get(m.milestoneId)}" class="suggest-task-card">
+                    <div class="suggest-task-header">
+                        <label class="suggest-check-label">
+                            <input type="checkbox" name="include" th:value="${task.globalIndex}" checked/>
+                            <span class="suggest-check-text">Include this task</span>
+                        </label>
+                        <div class="suggest-select-group">
+                            <select th:name="'priority_' + ${task.globalIndex}" class="form-control-sm priority-select">
+                                <option value="HIGH"   th:selected="${task.priority == 'HIGH'}">High</option>
+                                <option value="MEDIUM" th:selected="${task.priority == 'MEDIUM'}">Medium</option>
+                                <option value="LOW"    th:selected="${task.priority == 'LOW'}">Low</option>
+                            </select>
+                            <select th:name="'frequency_' + ${task.globalIndex}" class="form-control-sm priority-select">
+                                <option value="ONCE"    th:selected="${task.frequency == 'ONCE'}">One time</option>
+                                <option value="DAILY"   th:selected="${task.frequency == 'DAILY'}">Daily</option>
+                                <option value="WEEKLY"  th:selected="${task.frequency == 'WEEKLY'}">Weekly</option>
+                                <option value="MONTHLY" th:selected="${task.frequency == 'MONTHLY'}">Monthly</option>
+                            </select>
+                            <span class="suggest-times-label" title="times per period">&times;</span>
+                            <input type="number" th:name="'times_' + ${task.globalIndex}"
+                                   th:value="${task.timesPerPeriod}" min="1" max="30"
+                                   class="form-control-sm form-control-narrow" title="times per period"/>
+                        </div>
+                    </div>
+
+                    <div class="suggest-task-body">
+                        <input type="hidden" th:name="'milestoneId_' + ${task.globalIndex}" th:value="${m.milestoneId}"/>
+                        <input type="text"
+                               th:name="'title_' + ${task.globalIndex}"
+                               th:value="${task.title}"
+                               class="form-control suggest-title-input"
+                               maxlength="200" required/>
+
+                        <textarea th:name="'description_' + ${task.globalIndex}"
+                                  class="form-control suggest-desc-input"
+                                  rows="2"
+                                  th:text="${task.description}"></textarea>
+
+                        <div class="suggest-task-meta">
+                            <label class="suggest-meta-label">
+                                Est. minutes
+                                <input type="number"
+                                       th:name="'est_' + ${task.globalIndex}"
+                                       th:value="${task.estimatedMinutes}"
+                                       min="1" class="form-control-sm form-control-narrow"/>
+                            </label>
+                            <label class="suggest-meta-label" style="flex:1">
+                                Definition of done
+                                <input type="text"
+                                       th:name="'dod_' + ${task.globalIndex}"
+                                       th:value="${task.definitionOfDone}"
+                                       class="form-control-sm"/>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="empty-state" th:if="${suggestionsByMilestone.get(m.milestoneId) == null or suggestionsByMilestone.get(m.milestoneId).isEmpty()}">
+                AI could not generate tasks for this milestone — add them manually from the goal page.
+            </p>
+        </div>
+
+        <div class="form-actions" style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">Save selected tasks</button>
+            <a th:href="@{'/goal/' + ${goal.goalId}}" class="btn btn-outline">Skip, I'll add tasks manually</a>
+        </div>
+    </form>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach — AI Milestone Suggestions</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
+
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">AI-suggested milestones</h1>
+            <p class="page-subtitle">
+                For goal: <strong th:text="${goal.title}"></strong>
+            </p>
+        </div>
+    </div>
+
+    <p class="help-text" style="margin-bottom: 1.5rem;">
+        Milestones should be SMART: specific, measurable, and time-bound checkpoints entirely within your
+        control — unlike the goal itself, which can depend on things outside your control. Review, edit, or
+        uncheck any below, then approve them. AI will then suggest tasks for each milestone you keep.
+    </p>
+
+    <form th:action="@{'/goal/' + ${goal.goalId} + '/accept-milestones'}" method="post" class="form-loading">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" name="count" th:value="${count}"/>
+
+        <div class="suggest-task-list">
+            <div th:each="m, iter : ${suggestions}" class="suggest-task-card">
+                <div class="suggest-task-header">
+                    <label class="suggest-check-label">
+                        <input type="checkbox" name="include" th:value="${iter.index}" checked/>
+                        <span class="suggest-check-text">Include this milestone</span>
+                    </label>
+                </div>
+
+                <div class="suggest-task-body">
+                    <input type="text"
+                           th:name="'title_' + ${iter.index}"
+                           th:value="${m.title}"
+                           class="form-control suggest-title-input"
+                           maxlength="200" required/>
+
+                    <textarea th:name="'description_' + ${iter.index}"
+                              class="form-control suggest-desc-input"
+                              rows="2"
+                              th:text="${m.description}"></textarea>
+
+                    <div class="suggest-task-meta">
+                        <label class="suggest-meta-label">
+                            Target date <span class="required">*</span>
+                            <input type="date"
+                                   th:name="'targetDate_' + ${iter.index}"
+                                   th:value="${m.targetDate}"
+                                   required class="form-control-sm"/>
+                        </label>
+                        <label class="suggest-meta-label" style="flex:1">
+                            Success criteria (measurable) <span class="required">*</span>
+                            <input type="text"
+                                   th:name="'successCriteria_' + ${iter.index}"
+                                   th:value="${m.successCriteria}"
+                                   required class="form-control-sm"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions" style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" data-loading-text="Saving &amp; generating tasks…">Save selected milestones</button>
+            <a th:href="@{'/goal/' + ${goal.goalId}}" class="btn btn-outline">Skip, I'll add milestones manually</a>
+        </div>
+    </form>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

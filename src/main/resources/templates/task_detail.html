@@ -17,6 +17,8 @@
         <span> / </span>
         <a th:href="@{'/goal/' + ${goal.goalId}}" th:text="${goal.title}">Goal</a>
         <span> / </span>
+        <span th:text="${milestone.title}">Milestone</span>
+        <span> / </span>
         <span th:text="${task.title}">Task</span>
     </div>
 
@@ -63,7 +65,8 @@
             </div>
             <div class="task-meta-item" th:if="${task.frequency != null and task.frequency != 'ONCE'}">
                 <span class="meta-label">Repeats</span>
-                <span class="meta-value" th:text="${task.frequency}"></span>
+                <span class="meta-value"
+                      th:text="(${task.timesPerPeriod != null and task.timesPerPeriod > 1} ? ${task.timesPerPeriod} + 'x ' : '') + ${task.frequency}"></span>
             </div>
             <div class="task-meta-item" th:if="${task.completedAt != null}">
                 <span class="meta-label">Completed</span>

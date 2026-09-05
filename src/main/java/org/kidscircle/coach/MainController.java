@@ -10,6 +10,8 @@ import org.kidscircle.coach.db.*;
 import org.kidscircle.coach.model.*;
 import org.kidscircle.coach.service.FeasibilityResult;
 import org.kidscircle.coach.service.FeasibilityService;
+import org.kidscircle.coach.service.MilestoneTimelineResult;
+import org.kidscircle.coach.service.MilestoneTimelineService;
 import org.kidscircle.coach.service.NextActionService;
 import org.kidscircle.coach.web.BaseController;
 import org.slf4j.Logger;
@@ -32,6 +34,7 @@ public class MainController extends BaseController {
     @Autowired private TaskService taskService;
     @Autowired private MilestoneService milestoneService;
     @Autowired private FeasibilityService feasibilityService;
+    @Autowired private MilestoneTimelineService milestoneTimelineService;
     @Autowired private NextActionService nextActionService;
     @Autowired private PasswordEncoder passwordEncoder;
 
@@ -119,7 +122,7 @@ public class MainController extends BaseController {
         if (goal.getStatus() == null) goal.setStatus("ACTIVE");
         if (Boolean.TRUE.equals(goal.getLifelong())) goal.setTargetDate(null);
         goalService.saveGoal(goal);
-        return "redirect:/goal/" + goal.getGoalId() + "/suggest-tasks";
+        return "redirect:/goal/" + goal.getGoalId() + "/suggest-milestones";
     }
 
     private boolean hasTargetDateOrIsLifelong(Goal goal, RedirectAttributes ra) {
@@ -177,12 +180,16 @@ public class MainController extends BaseController {
         User user = getCurrentUser(principal);
         List<Milestone> milestones = milestoneService.getMilestonesForGoal(id);
         List<Task> tasks = taskService.getTopLevelTasksForGoal(id);
+        Map<Long, List<Task>> tasksByMilestone = tasks.stream()
+                .collect(Collectors.groupingBy(Task::getMilestoneId));
         FeasibilityResult feasibility = feasibilityService.calculate(goal);
+        MilestoneTimelineResult timeline = milestoneTimelineService.build(goal, milestones);
         int progress = goalService.calculateProgressPercent(id);
         model.addAttribute("goal", goal);
         model.addAttribute("milestones", milestones);
-        model.addAttribute("tasks", tasks);
+        model.addAttribute("tasksByMilestone", tasksByMilestone);
         model.addAttribute("feasibility", feasibility);
+        model.addAttribute("timeline", timeline);
         model.addAttribute("progress", progress);
         model.addAttribute("newTask", new Task());
         model.addAttribute("newMilestone", new Milestone());
@@ -210,10 +217,46 @@ public class MainController extends BaseController {
                                 RedirectAttributes ra) {
         Goal goal = goalService.getGoalById(goalId);
         assertOwnership(goal.getUserId(), principal);
+        if (!isSmart(milestone, ra)) {
+            return "redirect:/goal/" + goalId;
+        }
         milestone.setGoalId(goalId);
         milestoneService.saveMilestone(milestone);
         ra.addFlashAttribute("success", "Milestone saved.");
         return "redirect:/goal/" + goalId;
+    }
+
+    @PostMapping("/milestone/{id}/save")
+    public String updateMilestone(@PathVariable long id,
+                                  @ModelAttribute Milestone formMilestone,
+                                  Principal principal,
+                                  RedirectAttributes ra) {
+        Milestone milestone = milestoneService.getMilestoneById(id);
+        Goal goal = goalService.getGoalById(milestone.getGoalId());
+        assertOwnership(goal.getUserId(), principal);
+        if (!isSmart(formMilestone, ra)) {
+            return "redirect:/goal/" + goal.getGoalId();
+        }
+        milestone.setTitle(formMilestone.getTitle());
+        milestone.setDescription(formMilestone.getDescription());
+        milestone.setTargetDate(formMilestone.getTargetDate());
+        milestone.setSuccessCriteria(formMilestone.getSuccessCriteria());
+        if (formMilestone.getStatus() != null) milestone.setStatus(formMilestone.getStatus());
+        milestoneService.saveMilestone(milestone);
+        ra.addFlashAttribute("success", "Milestone updated.");
+        return "redirect:/goal/" + goal.getGoalId();
+    }
+
+    private boolean isSmart(Milestone milestone, RedirectAttributes ra) {
+        if (milestone.getTargetDate() == null) {
+            ra.addFlashAttribute("error", "Milestones must be SMART — set a target date.");
+            return false;
+        }
+        if (milestone.getSuccessCriteria() == null || milestone.getSuccessCriteria().isBlank()) {
+            ra.addFlashAttribute("error", "Milestones must be SMART — describe how you'll measure it done.");
+            return false;
+        }
+        return true;
     }
 
     @PostMapping("/milestone/delete/{id}")
@@ -231,15 +274,24 @@ public class MainController extends BaseController {
     @PostMapping("/saveTask")
     public String saveTask(Principal principal,
                            @ModelAttribute Task task,
-                           @RequestParam(required = false) Long goalId,
+                           @RequestParam long goalId,
                            RedirectAttributes ra) {
+        Goal goal = goalService.getGoalById(goalId);
+        assertOwnership(goal.getUserId(), principal);
+        if (task.getMilestoneId() == null) {
+            ra.addFlashAttribute("error", "Every task belongs to a milestone — pick one.");
+            return "redirect:/goal/" + goalId;
+        }
+        Milestone milestone = milestoneService.getMilestoneById(task.getMilestoneId());
+        if (!milestone.getGoalId().equals(goalId)) {
+            throw new SecurityException("Milestone does not belong to this goal");
+        }
         User user = getCurrentUser(principal);
         task.setUserId(user.getUserId());
-        if (goalId != null) task.setGoalId(goalId);
+        task.setGoalId(goalId);
         taskService.saveTask(task);
         ra.addFlashAttribute("success", "Task saved.");
-        String redirect = goalId != null ? "/goal/" + goalId : "/goals";
-        return "redirect:" + redirect;
+        return "redirect:/goal/" + goalId;
     }
 
     @GetMapping("/task/{id}")
@@ -248,11 +300,13 @@ public class MainController extends BaseController {
         User user = getCurrentUser(principal);
         if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
         Goal goal = goalService.getGoalById(task.getGoalId());
+        Milestone milestone = milestoneService.getMilestoneById(task.getMilestoneId());
         List<Task> subtasks = taskService.getTasksForGoal(task.getGoalId()).stream()
                 .filter(t -> task.getTaskId().equals(t.getParentTaskId()))
                 .collect(Collectors.toList());
         model.addAttribute("task", task);
         model.addAttribute("goal", goal);
+        model.addAttribute("milestone", milestone);
         model.addAttribute("subtasks", subtasks);
         return "task_detail";
     }
@@ -263,6 +317,7 @@ public class MainController extends BaseController {
         User user = getCurrentUser(principal);
         if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
         model.addAttribute("task", task);
+        model.addAttribute("milestones", milestoneService.getMilestonesForGoal(task.getGoalId()));
         return "task_edit";
     }
 
@@ -274,6 +329,14 @@ public class MainController extends BaseController {
         Task task = taskService.getTaskById(id);
         User user = getCurrentUser(principal);
         if (!task.getUserId().equals(user.getUserId())) return "redirect:/goals";
+        if (formTask.getMilestoneId() == null) {
+            ra.addFlashAttribute("error", "Every task belongs to a milestone — pick one.");
+            return "redirect:/task/" + id + "/edit";
+        }
+        Milestone milestone = milestoneService.getMilestoneById(formTask.getMilestoneId());
+        if (!milestone.getGoalId().equals(task.getGoalId())) {
+            throw new SecurityException("Milestone does not belong to this task's goal");
+        }
         task.setTitle(formTask.getTitle());
         task.setDescription(formTask.getDescription());
         task.setDefinitionOfDone(formTask.getDefinitionOfDone());
@@ -282,6 +345,8 @@ public class MainController extends BaseController {
         task.setDueDate(formTask.getDueDate());
         task.setSchedulingType(formTask.getSchedulingType());
         task.setFrequency(formTask.getFrequency());
+        task.setTimesPerPeriod(formTask.getTimesPerPeriod());
+        task.setMilestoneId(formTask.getMilestoneId());
         taskService.saveTask(task);
         ra.addFlashAttribute("success", "Task updated.");
         return "redirect:/task/" + id;

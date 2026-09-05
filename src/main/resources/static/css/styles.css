@@ -503,7 +503,67 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 .backlog-task-meta   { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .schedule-inline-form { margin-top: 8px; }
 
+/* ── Milestone timeline ───────────────────────────────────── */
+
+.timeline-window-note { font-size: .78rem; color: var(--color-text-muted); font-weight: 500; }
+
+.timeline-legend { display: flex; gap: 16px; margin-bottom: 8px; }
+.timeline-legend-item { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--color-text-muted); }
+
+.timeline-empty { padding: 24px 0; text-align: center; color: var(--color-text-muted); font-size: .875rem; }
+
+.timeline-wrap { padding: 0 70px; overflow-x: auto; }
+.timeline-track { position: relative; height: 108px; min-width: 480px; }
+.timeline-track::before {
+  content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px;
+  background: var(--color-border); transform: translateY(-1px);
+}
+
+.timeline-marker { position: absolute; top: 0; height: 100%; left: 0; transform: translateX(-50%); }
+
+.timeline-dot {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border); z-index: 1;
+}
+.timeline-dot.dot-completed { background: var(--color-success); box-shadow: 0 0 0 1px var(--color-success); }
+.timeline-dot.dot-upcoming  { background: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
+.timeline-dot.dot-overdue   { background: var(--color-danger);  box-shadow: 0 0 0 1px var(--color-danger); }
+
+.timeline-legend .timeline-dot { position: static; transform: none; width: 9px; height: 9px; }
+
+.timeline-stem { position: absolute; left: 50%; width: 1px; background: var(--color-border); transform: translateX(-50%); }
+.label-above .timeline-stem { top: calc(50% - 16px); height: 16px; }
+.label-below .timeline-stem { top: 50%; height: 16px; }
+
+.timeline-label {
+  position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column;
+  align-items: center; width: max-content; max-width: 120px; text-align: center;
+}
+.label-above .timeline-label { bottom: calc(50% + 16px); }
+.label-below .timeline-label { top: calc(50% + 16px); }
+
+.timeline-label-title { font-size: .78rem; font-weight: 600; max-width: 120px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.timeline-label-date { font-size: .72rem; color: var(--color-text-muted); }
+
+.timeline-endpoints { display: flex; justify-content: space-between; font-size: .78rem;
+  color: var(--color-text-muted); font-weight: 600; margin-top: 4px; padding: 0 0; min-width: 480px; }
+
 /* ── Milestones ───────────────────────────────────────────── */
+
+.milestone-block { border: 1px solid var(--color-border); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 16px; background: var(--color-bg); }
+.milestone-block:last-child { margin-bottom: 0; }
+.milestone-block-header { display: flex; align-items: flex-start; gap: 10px; }
+.milestone-block-body { flex: 1; }
+.milestone-block-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.milestone-meta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+.milestone-success { font-size: .78rem; color: var(--color-text-muted); }
+.milestone-done .milestone-block-body .milestone-title { text-decoration: line-through; color: var(--color-text-muted); }
+.milestone-block .task-list-detail { margin: 12px 0 0 30px; }
+.empty-state-inline { font-size: .82rem; color: var(--color-text-muted); margin: 10px 0 0 30px; }
+
 .milestone-list  { list-style: none; padding: 0; margin: 0; }
 .milestone-item  { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
   border-bottom: 1px solid var(--color-border); }
@@ -546,12 +606,17 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 .suggest-task-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1rem 1.25rem; }
 .suggest-task-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
 .suggest-select-group { display: flex; align-items: center; gap: 6px; }
+.suggest-times-label { font-size: .8rem; color: var(--color-text-muted); font-weight: 600; margin-left: 4px; }
 .suggest-check-label { display: flex; align-items: center; gap: .5rem; font-weight: 500; cursor: pointer; }
 .suggest-check-text { font-size: .9rem; }
 .suggest-title-input { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; }
 .suggest-desc-input { font-size: .875rem; color: var(--color-text-muted); margin-bottom: .75rem; resize: vertical; }
 .suggest-task-meta { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
 .suggest-meta-label { display: flex; flex-direction: column; gap: .25rem; font-size: .8rem; color: var(--color-text-muted); font-weight: 500; }
+
+.milestone-suggest-group { margin-bottom: 2rem; }
+.milestone-suggest-title { font-size: 1.05rem; margin: 0 0 .75rem; padding-bottom: .4rem;
+  border-bottom: 2px solid var(--color-border); }
 .priority-select { font-size: .8rem; }
 
 /* ── About You / Survey page ───────────────────────────────── */

@@ -3,6 +3,7 @@ package org.kidscircle.coach.model;
 import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -14,18 +15,26 @@ public class Milestone {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long milestoneId;
 
+    @NotNull
     private Long goalId;
 
+    // Specific: what exactly this checkpoint is
     @NotBlank
     private String title;
 
     @Column(length = 2000)
     private String description;
 
+    // Measurable: how you'll know it's done (SMART)
+    @Column(name = "success_criteria", length = 1000)
+    private String successCriteria;
+
     private Integer sequence = 0;
 
+    // Time-bound (SMART): every milestone must have a deadline
+    @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Column(name = "target_date")
+    @Column(name = "target_date", nullable = false)
     private LocalDate targetDate;
 
     private String status = "ACTIVE";
@@ -64,6 +73,9 @@ public class Milestone {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getSuccessCriteria() { return successCriteria; }
+    public void setSuccessCriteria(String successCriteria) { this.successCriteria = successCriteria; }
 
     public Integer getSequence() { return sequence; }
     public void setSequence(Integer sequence) { this.sequence = sequence; }
