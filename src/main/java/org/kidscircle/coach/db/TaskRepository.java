@@ -16,6 +16,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findByGoalId(Long goalId);
 
+    List<Task> findByMilestoneId(Long milestoneId);
+
     List<Task> findByGoalIdAndStatus(Long goalId, String status);
 
     @Query("select t from Task t where t.userId = :userId and t.dueDate = :date and t.status not in ('COMPLETED','CANCELED','SKIPPED')")

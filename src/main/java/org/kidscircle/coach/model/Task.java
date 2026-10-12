@@ -3,6 +3,7 @@ package org.kidscircle.coach.model;
 import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,7 +18,12 @@ public class Task {
 
     private Long goalId;
     private Long userId;
+
+    // Every task belongs to a milestone (Goal -> Milestone -> Task)
+    @NotNull
+    @Column(name = "milestone_id", nullable = false)
     private Long milestoneId;
+
     private Long parentTaskId;
 
     // Mapped to existing task_name column; used as task title
@@ -44,6 +50,14 @@ public class Task {
 
     @Column(name = "scheduling_type")
     private String schedulingType = "CHECKLIST";
+
+    // ONCE, DAILY, WEEKLY, or MONTHLY — how often this task repeats
+    private String frequency = "ONCE";
+
+    // How many times per frequency period, e.g. frequency=WEEKLY, timesPerPeriod=2 -> "2x a week".
+    // Meaningless when frequency is ONCE.
+    @Column(name = "times_per_period")
+    private Integer timesPerPeriod = 1;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "due_date")
@@ -79,6 +93,8 @@ public class Task {
         if (priority == null) priority = "MEDIUM";
         if (source == null) source = "USER";
         if (schedulingType == null) schedulingType = "CHECKLIST";
+        if (frequency == null) frequency = "ONCE";
+        if (timesPerPeriod == null) timesPerPeriod = 1;
     }
 
     @PreUpdate
@@ -138,6 +154,14 @@ public class Task {
 
     public String getSchedulingType() { return schedulingType; }
     public void setSchedulingType(String schedulingType) { this.schedulingType = schedulingType; }
+
+    public String getFrequency() { return frequency; }
+    public void setFrequency(String frequency) { this.frequency = frequency; }
+
+    public Integer getTimesPerPeriod() { return timesPerPeriod; }
+    public void setTimesPerPeriod(Integer timesPerPeriod) {
+        this.timesPerPeriod = (timesPerPeriod != null && timesPerPeriod >= 1) ? timesPerPeriod : 1;
+    }
 
     public LocalDate getDueDate() { return dueDate; }
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }

@@ -4,6 +4,7 @@ import org.kidscircle.coach.model.Goal;
 import org.kidscircle.coach.model.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,12 @@ public class GoalServiceImpl implements GoalService {
 
     @Autowired
     private TaskRepository taskRepository;
+
+    @Autowired
+    private MilestoneRepository milestoneRepository;
+
+    @Autowired
+    private WorkSessionRepository workSessionRepository;
 
     @Override
     public List<Goal> getGoalForUser(long userId) {
@@ -39,7 +46,11 @@ public class GoalServiceImpl implements GoalService {
     }
 
     @Override
+    @Transactional
     public void deleteGoalById(long id) {
+        workSessionRepository.deleteAll(workSessionRepository.findByGoalId(id));
+        taskRepository.deleteAll(taskRepository.findByGoalId(id));
+        milestoneRepository.deleteAll(milestoneRepository.findByGoalIdOrderBySequenceAsc(id));
         goalRepository.deleteById(id);
     }
 

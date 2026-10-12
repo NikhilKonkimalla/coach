@@ -17,6 +17,9 @@ public class FeasibilityService {
     private TaskRepository taskRepository;
 
     public FeasibilityResult calculate(Goal goal) {
+        if (Boolean.TRUE.equals(goal.getLifelong())) {
+            return FeasibilityResult.lifelong();
+        }
         if (goal.getTargetDate() == null) {
             return FeasibilityResult.incompleteData("Goal has no target date.");
         }

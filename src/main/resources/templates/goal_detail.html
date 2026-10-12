@@ -30,7 +30,10 @@
         </div>
 
         <div class="goal-meta-row">
-            <span class="goal-meta-item" th:if="${goal.targetDate != null}">
+            <span class="goal-meta-item" th:if="${goal.lifelong == true}">
+                <strong>Lifelong goal</strong>
+            </span>
+            <span class="goal-meta-item" th:if="${goal.lifelong != true and goal.targetDate != null}">
                 Target: <strong th:text="${goal.targetDate}"></strong>
             </span>
             <span class="goal-meta-item" th:if="${goal.weeklyCapacityMinutes != null}">
@@ -78,40 +81,183 @@
         </div>
     </div>
 
-    <div class="detail-grid">
+    <!-- Milestone timeline -->
+    <section class="detail-panel timeline-panel" th:if="${!milestones.isEmpty()}">
+        <div class="panel-header">
+            <h2>Milestone timeline</h2>
+            <span class="timeline-window-note" th:if="${timeline.capped}">Showing the next 2 years</span>
+        </div>
 
-        <!-- Tasks panel -->
-        <section class="detail-panel">
-            <div class="panel-header">
-                <h2>Tasks</h2>
-                <button type="button" class="btn btn-primary btn-sm" onclick="togglePanel('add-task-panel')">+ Add task</button>
+        <div class="timeline-legend">
+            <span class="timeline-legend-item"><span class="timeline-dot dot-completed"></span> Completed</span>
+            <span class="timeline-legend-item"><span class="timeline-dot dot-upcoming"></span> Upcoming</span>
+            <span class="timeline-legend-item"><span class="timeline-dot dot-overdue"></span> Overdue</span>
+        </div>
+
+        <div class="timeline-empty" th:if="${timeline.items.isEmpty()}">
+            <p>No milestones fall within the next 2 years.</p>
+        </div>
+
+        <div class="timeline-wrap" th:if="${!timeline.items.isEmpty()}">
+            <div class="timeline-track">
+                <div th:each="item : ${timeline.items}" class="timeline-marker"
+                     th:classappend="${item.labelAbove} ? 'label-above' : 'label-below'"
+                     th:style="'left:' + ${item.positionPercent} + '%'">
+                    <span class="timeline-stem"></span>
+                    <span class="timeline-dot"
+                          th:classappend="'dot-' + ${#strings.toLowerCase(item.status)}"
+                          th:title="${item.milestone.title} + ' — ' + ${item.milestone.targetDate}"></span>
+                    <span class="timeline-label">
+                        <span class="timeline-label-title" th:text="${item.milestone.title}" th:title="${item.milestone.title}"></span>
+                        <span class="timeline-label-date" th:text="${item.milestone.targetDate}"></span>
+                    </span>
+                </div>
+            </div>
+            <div class="timeline-endpoints">
+                <span>Today</span>
+                <span th:text="${timeline.windowEnd}"></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Milestones (each with its nested tasks) -->
+    <section class="detail-panel milestones-panel">
+        <div class="panel-header">
+            <h2>Milestones</h2>
+            <button type="button" class="btn btn-outline btn-sm" onclick="togglePanel('add-milestone-panel')">+ Add milestone</button>
+        </div>
+
+        <p class="help-text">
+            Milestones must be SMART — specific, measurable, and time-bound checkpoints entirely within your
+            control. Every task belongs to one of them.
+        </p>
+
+        <div id="add-milestone-panel" class="inline-form-panel" style="display:none">
+            <form th:action="@{'/goal/' + ${goal.goalId} + '/milestone/save'}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-row">
+                    <div class="form-group form-col-wide">
+                        <label for="mTitle">Milestone title (specific)</label>
+                        <input type="text" id="mTitle" name="title" required class="form-control"
+                               placeholder="e.g. Contact 5 potential investors">
+                    </div>
+                    <div class="form-group form-col-narrow">
+                        <label for="mDate">Target date <span class="required">*</span></label>
+                        <input type="date" id="mDate" name="targetDate" required class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="mSuccess">Success criteria (measurable) <span class="required">*</span></label>
+                    <input type="text" id="mSuccess" name="successCriteria" required class="form-control"
+                           placeholder="How will you know this is done?">
+                </div>
+                <div class="form-group">
+                    <label for="mDescription">Description</label>
+                    <textarea id="mDescription" name="description" rows="2" class="form-control"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Save milestone</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="togglePanel('add-milestone-panel')">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="empty-state" th:if="${milestones.isEmpty()}">
+            <p>No milestones yet. Break this goal into SMART checkpoints you control.</p>
+        </div>
+
+        <div th:each="m : ${milestones}" class="milestone-block"
+             th:classappend="${m.status == 'COMPLETED'} ? 'milestone-done'">
+            <div class="milestone-block-header">
+                <div class="milestone-marker"
+                     th:classappend="${m.status == 'COMPLETED'} ? 'marker-done'">&#9679;</div>
+                <div class="milestone-block-body">
+                    <span class="milestone-title" th:text="${m.title}"></span>
+                    <div class="milestone-meta-row">
+                        <span class="milestone-date" th:text="'Target: ' + ${m.targetDate}"></span>
+                        <span class="milestone-success" th:if="${m.successCriteria != null}"
+                              th:text="'Measured by: ' + ${m.successCriteria}"></span>
+                    </div>
+                </div>
+                <div class="milestone-block-actions">
+                    <form th:action="@{'/milestone/' + ${m.milestoneId} + '/suggest-tasks'}" method="get" class="form-loading" style="display:inline">
+                        <button type="submit" class="btn btn-outline btn-xs" data-loading-text="Generating…">&#10024; AI suggest tasks</button>
+                    </form>
+                    <button type="button" class="btn btn-outline btn-xs"
+                            th:onclick="|togglePanel('add-task-panel-${m.milestoneId}')|">+ Add task</button>
+                    <button type="button" class="btn btn-outline btn-xs"
+                            th:onclick="|togglePanel('edit-milestone-panel-${m.milestoneId}')|">Edit</button>
+                    <form th:action="@{'/milestone/delete/' + ${m.milestoneId}}" method="post" style="display:inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-danger btn-xs"
+                                onclick="return confirm('Delete this milestone and all its tasks?')">&times;</button>
+                    </form>
+                </div>
             </div>
 
-            <!-- Add task form (hidden by default) -->
-            <div id="add-task-panel" class="inline-form-panel" style="display:none">
+            <!-- Edit form, scoped to this milestone -->
+            <div th:id="'edit-milestone-panel-' + ${m.milestoneId}" class="inline-form-panel" style="display:none">
+                <form th:action="@{'/milestone/' + ${m.milestoneId} + '/save'}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="form-row">
+                        <div class="form-group form-col-wide">
+                            <label>Milestone title (specific)</label>
+                            <input type="text" name="title" th:value="${m.title}" required class="form-control">
+                        </div>
+                        <div class="form-group form-col-narrow">
+                            <label>Target date <span class="required">*</span></label>
+                            <input type="date" name="targetDate" th:value="${m.targetDate}" required class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Success criteria (measurable) <span class="required">*</span></label>
+                        <input type="text" name="successCriteria" th:value="${m.successCriteria}" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="description" rows="2" class="form-control" th:text="${m.description}"></textarea>
+                    </div>
+                    <div class="form-group form-col-narrow">
+                        <label>Status</label>
+                        <select name="status" class="form-control">
+                            <option value="ACTIVE" th:selected="${m.status == 'ACTIVE'}">Active</option>
+                            <option value="COMPLETED" th:selected="${m.status == 'COMPLETED'}">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-sm">Save changes</button>
+                        <button type="button" class="btn btn-outline btn-sm"
+                                th:onclick="|togglePanel('edit-milestone-panel-${m.milestoneId}')|">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Add task form, scoped to this milestone -->
+            <div th:id="'add-task-panel-' + ${m.milestoneId}" class="inline-form-panel" style="display:none">
                 <form th:action="@{/saveTask}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <input type="hidden" name="goalId" th:value="${goal.goalId}"/>
+                    <input type="hidden" name="milestoneId" th:value="${m.milestoneId}"/>
                     <div class="form-row">
                         <div class="form-group form-col-wide">
-                            <label for="taskTitle">Task title</label>
-                            <input type="text" id="taskTitle" name="title" required class="form-control"
+                            <label>Task title</label>
+                            <input type="text" name="title" required class="form-control"
                                    placeholder="What needs to be done?">
                         </div>
                         <div class="form-group form-col-narrow">
-                            <label for="taskEst">Est. minutes</label>
-                            <input type="number" id="taskEst" name="estimatedMinutes" min="1" class="form-control"
+                            <label>Est. minutes</label>
+                            <input type="number" name="estimatedMinutes" min="1" class="form-control"
                                    placeholder="60">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group form-col">
-                            <label for="taskDue">Due date</label>
-                            <input type="date" id="taskDue" name="dueDate" class="form-control">
+                            <label>Due date</label>
+                            <input type="date" name="dueDate" class="form-control">
                         </div>
                         <div class="form-group form-col">
-                            <label for="taskPriority">Priority</label>
-                            <select id="taskPriority" name="priority" class="form-control">
+                            <label>Priority</label>
+                            <select name="priority" class="form-control">
                                 <option value="LOW">Low</option>
                                 <option value="MEDIUM" selected>Medium</option>
                                 <option value="HIGH">High</option>
@@ -119,28 +265,35 @@
                             </select>
                         </div>
                         <div class="form-group form-col">
-                            <label for="taskType">Type</label>
-                            <select id="taskType" name="schedulingType" class="form-control">
-                                <option value="CHECKLIST" selected>Checklist</option>
-                                <option value="TIME_BLOCK">Time block</option>
+                            <label>Frequency</label>
+                            <select name="frequency" class="form-control">
+                                <option value="ONCE" selected>One time</option>
+                                <option value="DAILY">Daily</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="MONTHLY">Monthly</option>
                             </select>
+                        </div>
+                        <div class="form-group form-col-narrow">
+                            <label>Times per period</label>
+                            <input type="number" name="timesPerPeriod" min="1" max="30" value="1" class="form-control">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="taskDod">Definition of done</label>
-                        <input type="text" id="taskDod" name="definitionOfDone" class="form-control"
+                        <label>Definition of done</label>
+                        <input type="text" name="definitionOfDone" class="form-control"
                                placeholder="Optional — how will you know this is done?">
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary btn-sm">Save task</button>
-                        <button type="button" class="btn btn-outline btn-sm" onclick="togglePanel('add-task-panel')">Cancel</button>
+                        <button type="button" class="btn btn-outline btn-sm"
+                                th:onclick="|togglePanel('add-task-panel-${m.milestoneId}')|">Cancel</button>
                     </div>
                 </form>
             </div>
 
-            <!-- Task list -->
-            <ul class="task-list-detail" th:if="${!tasks.isEmpty()}">
-                <li th:each="task : ${tasks}" class="task-list-row"
+            <!-- Tasks for this milestone -->
+            <ul class="task-list-detail" th:if="${!#lists.isEmpty(tasksByMilestone.get(m.milestoneId))}">
+                <li th:each="task : ${tasksByMilestone.get(m.milestoneId)}" class="task-list-row"
                     th:classappend="${task.status == 'COMPLETED' ? 'task-done' : (task.overdue ? 'task-overdue' : '')}">
                     <div class="task-row-left">
                         <!-- Quick complete checkbox -->
@@ -168,6 +321,8 @@
                                   th:classappend="${task.priority == 'CRITICAL' ? 'priority-critical' : (task.priority == 'HIGH' ? 'priority-high' : '')}"></span>
                             <span class="task-est-label" th:if="${task.estimatedMinutes != null}"
                                   th:text="${task.estimatedMinutes} + ' min'"></span>
+                            <span class="task-freq-label" th:if="${task.frequency != null and task.frequency != 'ONCE'}"
+                                  th:text="(${task.timesPerPeriod != null and task.timesPerPeriod > 1} ? ${task.timesPerPeriod} + 'x ' : '') + ${task.frequency}"></span>
                             <span class="task-due-label" th:if="${task.dueDate != null}"
                                   th:text="'Due ' + ${task.dueDate}"
                                   th:classappend="${task.overdue} ? ' text-danger'"></span>
@@ -185,62 +340,11 @@
                     </div>
                 </li>
             </ul>
-            <div class="empty-state" th:if="${tasks.isEmpty()}">
-                <p>No tasks yet. Add your first task above.</p>
-            </div>
-        </section>
-
-        <!-- Milestones panel -->
-        <section class="detail-panel">
-            <div class="panel-header">
-                <h2>Milestones</h2>
-                <button type="button" class="btn btn-outline btn-sm" onclick="togglePanel('add-milestone-panel')">+ Add milestone</button>
-            </div>
-
-            <div id="add-milestone-panel" class="inline-form-panel" style="display:none">
-                <form th:action="@{'/goal/' + ${goal.goalId} + '/milestone/save'}" method="post">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <div class="form-row">
-                        <div class="form-group form-col-wide">
-                            <label for="mTitle">Milestone title</label>
-                            <input type="text" id="mTitle" name="title" required class="form-control"
-                                   placeholder="e.g. Résumé ready to send">
-                        </div>
-                        <div class="form-group form-col-narrow">
-                            <label for="mDate">Target date</label>
-                            <input type="date" id="mDate" name="targetDate" class="form-control">
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary btn-sm">Save milestone</button>
-                        <button type="button" class="btn btn-outline btn-sm" onclick="togglePanel('add-milestone-panel')">Cancel</button>
-                    </div>
-                </form>
-            </div>
-
-            <ul class="milestone-list" th:if="${!milestones.isEmpty()}">
-                <li th:each="m : ${milestones}" class="milestone-item"
-                    th:classappend="${m.status == 'COMPLETED'} ? 'milestone-done'">
-                    <div class="milestone-marker"
-                         th:classappend="${m.status == 'COMPLETED'} ? 'marker-done'">&#9679;</div>
-                    <div class="milestone-body">
-                        <span class="milestone-title" th:text="${m.title}"></span>
-                        <span class="milestone-date" th:if="${m.targetDate != null}"
-                              th:text="${m.targetDate}"></span>
-                    </div>
-                    <form th:action="@{'/milestone/delete/' + ${m.milestoneId}}" method="post" style="display:inline">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="btn btn-danger btn-xs"
-                                onclick="return confirm('Delete milestone?')">&times;</button>
-                    </form>
-                </li>
-            </ul>
-            <div class="empty-state" th:if="${milestones.isEmpty()}">
-                <p>No milestones yet. Add milestones to break this goal into stages.</p>
-            </div>
-        </section>
-
-    </div>
+            <p class="empty-state-inline" th:if="${#lists.isEmpty(tasksByMilestone.get(m.milestoneId))}">
+                No tasks yet for this milestone.
+            </p>
+        </div>
+    </section>
 </main>
 
 <div th:replace="fragments :: mobile-nav"></div>
@@ -250,5 +354,6 @@ function togglePanel(id) {
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 </script>
+<script th:src="@{/js/script.js}"></script>
 </body>
 </html>

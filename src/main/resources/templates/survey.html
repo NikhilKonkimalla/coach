@@ -2,114 +2,243 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Register New User</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach — About You</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}" />
 </head>
-<body>
-<div class="container">
+<body class="app-page">
+<div th:replace="fragments :: nav"></div>
 
-   <div th:replace="fragments :: top-bar"></div>
+<main class="app-main">
+    <div th:replace="fragments :: flash"></div>
 
-    <h1> What Motivates YOU</h1>
-    <form action="#" th:action="@{/survey-submit}" th:object="${survey}" method="post" class="login-container" >
-        <div class="form-group">
-            <p><label for="name">What drives you?</label> </p>
-            <input type="radio" id="drives1" name="drive" th:field="*{drive}" value="a" required>
-              <label for="drives1"> My desire to achieve my goals</label><br>
-            <input type="radio" id="drives2" name="drive" th:field="*{drive}" value="b" required>
-              <label for="drives2"> To support my family</label><br>
-            <input type="radio" id="drives3" name="drive" th:field="*{drive}" value="c" required>
-              <label for="drives3"> To be a role model</label><br>
-            <input type="radio" id="drives4" name="drive" th:field="*{drive}" value="d" required>
-              <label for="drives4">Pressure to excel (family, friends, yourself etc.)</label><br>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">About You</h1>
+            <p class="page-subtitle">Help us understand how you think and work best so we can coach you better.</p>
         </div>
-        <div class="form-group">
-            <p><label for="name">When you feel unmotivated, what do you do?</label> </p>
-            <input type="radio" id="unmotivated1" name="unmotivated" th:field="*{unmotivated}" value="a" required>
-              <label for="unmotivated1"> Take a break and come back</label><br>
-            <input type="radio" id="unmotivated2" name="unmotivated" th:field="*{unmotivated}" value="b" required>
-              <label for="unmotivated2"> Think about why what I am doing is important to me</label><br>
-            <input type="radio" id="unmotivated3" name="unmotivated" th:field="*{unmotivated}" value="c" required>
-              <label for="unmotivated3"> Push through whatever block I have</label><br>
-            <input type="radio" id="unmotivated4" name="unmotivated" th:field="*{unmotivated}" value="d" required>
-              <label for="unmotivated4">Quit working</label><br>
-        </div>
-        <div class="form-group">
-            <p><label for="name">How strongly do you believe in yourself?</label> </p>
-            <input type="radio" id="belief1" name="belief" th:field="*{belief}" value="a" required>
-              <label for="belief1"> I strongly believe in my abilities</label><br>
-            <input type="radio" id="belief2" name="belief" th:field="*{belief}" value="b" required>
-              <label for="belief2"> I moderately believe in my abilities</label><br>
-            <input type="radio" id="belief3" name="belief" th:field="*{belief}" value="c" required>
-              <label for="belief3"> I don’t believe in my abilities</label><br>
-        </div>
-        <div class="form-group">
-            <p><label for="name">How important is having a clear sense of purpose in motivating you to study/learn?</label> </p>
-            <input type="radio" id="purpose1" name="purpose" th:field="*{purpose}" value="a" required>
-              <label for="purpose1">It is very important</label><br>
-            <input type="radio" id="purpose2" name="purpose" th:field="*{purpose}" value="b" required>
-              <label for="purpose2">It doesn't play a significant role in my motivation.</label><br>
-            <input type="radio" id="purpose3" name="purpose" th:field="*{purpose}" value="c" required>
-              <label for="purpose3">It depends on the subject I am learning</label><br>
-            <input type="radio" id="purpose4" name="purpose" th:field="*{purpose}" value="d" required>
-              <label for="purpose4">I'm unsure about the importance of having a sense of purpose.</label><br>
-        </div>
-        <div class="form-group">
-            <p><label for="name">What impact do past successes have on your motivation?</label> </p>
-            <input type="radio" id="drives1" name="success" th:field="*{success}" value="a" required>
-              <label for="success1">Past successes boost my confidence </label><br>
-            <input type="radio" id="drives2" name="success" th:field="*{success}" value="b" required>
-              <label for="success2">I feel pressure to consistently replicate past achievements.</label><br>
-            <input type="radio" id="drives3" name="success" th:field="*{success}" value="c" required>
-              <label for="success3">Past successes have little impact on my motivation.</label><br>
-        </div>
-        
-        <div class="form-group">
-            <p><label for="name">How do you respond to setbacks?</label> </p>
-            <input type="radio" id="setbacks1" name="setback" th:field="*{setback}" value="a" required>
-              <label for="setbacks1">I view them as learning opportunities</label><br>
-            <input type="radio" id="setbacks2" name="setback" th:field="*{setback}" value="b" required>
-              <label for="setbacks2">I feel discouraged</label><br>
-        </div>     
-        <div class="form-group">
-            <p><label for="name">In what environment do you best perform?</label> </p>
-            <input type="radio" id="environments1" name="environment" th:field="*{environment}" value="a" required>
-              <label for="environments1">By myself, focused</label><br>
-            <input type="radio" id="environments2" name="environment" th:field="*{environment}" value="b" required>
-              <label for="environments2">With a group of people who share my goal</label><br>
-            <input type="radio" id="environments3" name="environment" th:field="*{environment}" value="c" required>
-              <label for="environments3">With any group of people</label><br>
-            <input type="radio" id="environments4" name="environment" th:field="*{environment}" value="d" required>
-              <label for="environments4">In a public setting (library, coffee shop) etc. </label><br>
-        </div>
-         <div class="form-group">
-            <p><label for="name">What distracts you from your goals the most?</label> </p>
-            <input type="radio" id="distracts1" name="distract" th:field="*{distract}" value="a" required>
-              <label for="distracts1">Myself/overthinking</label><br>
-            <input type="radio" id="distracts2" name="distract" th:field="*{distract}" value="b" required>
-              <label for="distracts2">My phone/other electronics</label><br>
-            <input type="radio" id="distracts3" name="distract" th:field="*{distract}" value="c" required>
-              <label for="distracts3">Other people/bad influences</label><br>
-            <input type="radio" id="distracts4" name="distract" th:field="*{distract}" value="d" required>
-              <label for="distracts4">School/Extracurriculars not related to my goal</label><br>
-            <input type="radio" id="distracts5" name="distract" th:field="*{distract}" value="d" required>
-              <label for="distracts5">other responsibilities</label><br>
+    </div>
+
+    <form th:action="@{/survey-submit}" th:object="${survey}" method="post" class="survey-form">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <!-- Motivation -->
+        <div class="survey-section">
+            <div class="survey-section-header">
+                <span class="survey-section-icon">&#9889;</span>
+                <h2 class="survey-section-title">Motivation</h2>
+            </div>
+
+            <div class="survey-question">
+                <p class="survey-question-text">What drives you?</p>
+                <div class="survey-options">
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{drive}" value="a" required/>
+                        <span class="survey-option-text">My desire to achieve my goals</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{drive}" value="b"/>
+                        <span class="survey-option-text">To support my family</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{drive}" value="c"/>
+                        <span class="survey-option-text">To be a role model</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{drive}" value="d"/>
+                        <span class="survey-option-text">Pressure to excel (family, friends, yourself)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="survey-question">
+                <p class="survey-question-text">When you feel unmotivated, what do you do?</p>
+                <div class="survey-options">
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{unmotivated}" value="a" required/>
+                        <span class="survey-option-text">Take a break and come back</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{unmotivated}" value="b"/>
+                        <span class="survey-option-text">Think about why what I am doing is important to me</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{unmotivated}" value="c"/>
+                        <span class="survey-option-text">Push through whatever block I have</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{unmotivated}" value="d"/>
+                        <span class="survey-option-text">Quit working for the day</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="survey-question">
+                <p class="survey-question-text">How important is having a clear sense of purpose?</p>
+                <div class="survey-options">
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{purpose}" value="a" required/>
+                        <span class="survey-option-text">It is very important — purpose fuels everything</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{purpose}" value="b"/>
+                        <span class="survey-option-text">It doesn't play a significant role in my motivation</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{purpose}" value="c"/>
+                        <span class="survey-option-text">It depends on what I am learning</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{purpose}" value="d"/>
+                        <span class="survey-option-text">I'm unsure how much purpose matters to me</span>
+                    </label>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <p><label for="name">What helps you most when face a setback?</label> </p>
-            <input type="radio" id="helps1" name="help" th:field="*{help}" value="a" required>
-              <label for="helps1"> Take a break from work</label><br>
-            <input type="radio" id="helps2" name="help" th:field="*{help}" value="b" required>
-              <label for="helps2">Talk to a friend</label><br>
-            <input type="radio" id="helps3" name="help" th:field="*{help}" value="c" required>
-              <label for="helps3">Speak to a coach or a teacher</label><br>
-            <input type="radio" id="helps4" name="help" th:field="*{help}" value="d" required>
-              <label for="helps4">Focus on the next goal</label><br>
+        <!-- Mindset -->
+        <div class="survey-section">
+            <div class="survey-section-header">
+                <span class="survey-section-icon">&#129504;</span>
+                <h2 class="survey-section-title">Mindset</h2>
+            </div>
+
+            <div class="survey-question">
+                <p class="survey-question-text">How strongly do you believe in yourself?</p>
+                <div class="survey-options">
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{belief}" value="a" required/>
+                        <span class="survey-option-text">I strongly believe in my abilities</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{belief}" value="b"/>
+                        <span class="survey-option-text">I moderately believe in my abilities</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{belief}" value="c"/>
+                        <span class="survey-option-text">I often doubt my abilities</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="survey-question">
+                <p class="survey-question-text">What impact do past successes have on your motivation?</p>
+                <div class="survey-options">
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{success}" value="a" required/>
+                        <span class="survey-option-text">Past successes boost my confidence</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{success}" value="b"/>
+                        <span class="survey-option-text">I feel pressure to consistently replicate past achievements</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{success}" value="c"/>
+                        <span class="survey-option-text">Past successes have little impact on my motivation</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="survey-question">
+                <p class="survey-question-text">How do you respond to setbacks?</p>
+                <div class="survey-options">
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{setback}" value="a" required/>
+                        <span class="survey-option-text">I view them as learning opportunities</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{setback}" value="b"/>
+                        <span class="survey-option-text">I feel discouraged and need time to recover</span>
+                    </label>
+                </div>
+            </div>
         </div>
-        
-        <button type="submit">Submit</button>
+
+        <!-- Work Style -->
+        <div class="survey-section">
+            <div class="survey-section-header">
+                <span class="survey-section-icon">&#127775;</span>
+                <h2 class="survey-section-title">Work Style</h2>
+            </div>
+
+            <div class="survey-question">
+                <p class="survey-question-text">In what environment do you perform best?</p>
+                <div class="survey-options">
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{environment}" value="a" required/>
+                        <span class="survey-option-text">By myself, fully focused</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{environment}" value="b"/>
+                        <span class="survey-option-text">With a group of people who share my goal</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{environment}" value="c"/>
+                        <span class="survey-option-text">With any group of people</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{environment}" value="d"/>
+                        <span class="survey-option-text">In a public setting (library, coffee shop, etc.)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="survey-question">
+                <p class="survey-question-text">What distracts you from your goals the most?</p>
+                <div class="survey-options">
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{distract}" value="a" required/>
+                        <span class="survey-option-text">Myself / overthinking</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{distract}" value="b"/>
+                        <span class="survey-option-text">My phone or other electronics</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{distract}" value="c"/>
+                        <span class="survey-option-text">Other people or bad influences</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{distract}" value="d"/>
+                        <span class="survey-option-text">School or extracurriculars unrelated to my goal</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{distract}" value="e"/>
+                        <span class="survey-option-text">Other responsibilities</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="survey-question">
+                <p class="survey-question-text">What helps you most when you face a setback?</p>
+                <div class="survey-options">
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{help}" value="a" required/>
+                        <span class="survey-option-text">Take a break from work</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{help}" value="b"/>
+                        <span class="survey-option-text">Talk to a friend</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{help}" value="c"/>
+                        <span class="survey-option-text">Speak to a coach or teacher</span>
+                    </label>
+                    <label class="survey-option">
+                        <input type="radio" th:field="*{help}" value="d"/>
+                        <span class="survey-option-text">Focus on the next goal</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save my profile</button>
+            <a href="/dashboard" class="btn btn-outline">Cancel</a>
+        </div>
     </form>
- </div>
+</main>
+
+<div th:replace="fragments :: mobile-nav"></div>
 </body>
 </html>

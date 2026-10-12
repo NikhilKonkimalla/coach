@@ -13,14 +13,18 @@
         <li><a href="/today"     class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/today'} ? 'active'">Today</a></li>
         <li><a href="/goals"     class="nav-link" th:classappend="${#httpServletRequest.requestURI.startsWith('/goal')} ? 'active'">Goals</a></li>
         <li><a href="/week"      class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/week'} ? 'active'">This Week</a></li>
-        <li><a href="/calendar"  class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/calendar'} ? 'active'">Calendar</a></li>
-        <li><a href="/survey"    class="nav-link">Settings</a></li>
+        <li><a href="/survey" class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/survey'} ? 'active'">About You</a></li>
     </ul>
     <div class="nav-user">
-        <span sec:authentication="name" class="nav-username"></span>
-        <form th:action="@{/logout}" method="post" style="display:inline">
-            <button type="submit" class="btn-logout">Sign out</button>
-        </form>
+        <details class="nav-user-menu">
+            <summary class="nav-username" sec:authentication="name"></summary>
+            <div class="nav-user-dropdown">
+                <a href="/change-password" class="nav-user-dropdown-item">Change password</a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="nav-user-dropdown-item nav-user-dropdown-btn">Sign out</button>
+                </form>
+            </div>
+        </details>
     </div>
 </nav>
 
@@ -35,8 +39,8 @@
     <a href="/week"     class="mobile-nav-item" th:classappend="${#httpServletRequest.requestURI == '/week'} ? 'active'">
         <span class="mobile-nav-icon">&#128197;</span><span class="mobile-nav-label">Week</span>
     </a>
-    <a href="/calendar" class="mobile-nav-item" th:classappend="${#httpServletRequest.requestURI == '/calendar'} ? 'active'">
-        <span class="mobile-nav-icon">&#128198;</span><span class="mobile-nav-label">Calendar</span>
+    <a href="/survey"   class="mobile-nav-item" th:classappend="${#httpServletRequest.requestURI == '/survey'} ? 'active'">
+        <span class="mobile-nav-icon">&#128100;</span><span class="mobile-nav-label">About You</span>
     </a>
 </nav>
 

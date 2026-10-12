@@ -77,7 +77,8 @@
                 <li th:each="goal : ${activeGoals}" class="item-list-row">
                     <div class="item-content">
                         <span class="item-title" th:text="${goal.title}"></span>
-                        <span class="item-meta" th:if="${goal.targetDate != null}"
+                        <span class="item-meta" th:if="${goal.lifelong == true}">Lifelong</span>
+                        <span class="item-meta" th:if="${goal.lifelong != true and goal.targetDate != null}"
                               th:text="'Due ' + ${goal.targetDate}"></span>
                     </div>
                     <a th:href="@{'/goal/' + ${goal.goalId}}" class="item-action">&#8594;</a>

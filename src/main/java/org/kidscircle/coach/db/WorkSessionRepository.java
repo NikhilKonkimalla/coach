@@ -20,4 +20,6 @@ public interface WorkSessionRepository extends JpaRepository<WorkSession, Long> 
                                           @Param("end") LocalDate end);
 
     List<WorkSession> findByTaskId(Long taskId);
+
+    List<WorkSession> findByGoalId(Long goalId);
 }

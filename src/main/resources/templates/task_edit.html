@@ -39,6 +39,13 @@
                 <input type="text" id="definitionOfDone" th:field="*{definitionOfDone}" class="form-control">
             </div>
 
+            <div class="form-group">
+                <label for="milestoneId">Milestone <span class="required">*</span></label>
+                <select id="milestoneId" th:field="*{milestoneId}" required class="form-control">
+                    <option th:each="m : ${milestones}" th:value="${m.milestoneId}" th:text="${m.title}"></option>
+                </select>
+            </div>
+
             <div class="form-row">
                 <div class="form-group form-col">
                     <label for="estimatedMinutes">Estimated minutes</label>
@@ -69,6 +76,20 @@
                         <option value="REMINDER">Reminder</option>
                         <option value="MILESTONE_MARKER">Milestone marker</option>
                     </select>
+                </div>
+                <div class="form-group form-col">
+                    <label for="frequency">Frequency</label>
+                    <select id="frequency" th:field="*{frequency}" class="form-control">
+                        <option value="ONCE">One time</option>
+                        <option value="DAILY">Daily</option>
+                        <option value="WEEKLY">Weekly</option>
+                        <option value="MONTHLY">Monthly</option>
+                    </select>
+                </div>
+                <div class="form-group form-col-narrow">
+                    <label for="timesPerPeriod">Times per period</label>
+                    <input type="number" id="timesPerPeriod" th:field="*{timesPerPeriod}"
+                           min="1" max="30" class="form-control">
                 </div>
                 <div class="form-group form-col">
                     <label for="status">Status</label>

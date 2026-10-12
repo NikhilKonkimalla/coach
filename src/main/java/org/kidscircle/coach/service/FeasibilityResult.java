@@ -2,7 +2,7 @@ package org.kidscircle.coach.service;
 
 public class FeasibilityResult {
 
-    public enum Status { FEASIBLE, TIGHT, OVER_CAPACITY, INCOMPLETE_DATA, INVALID }
+    public enum Status { FEASIBLE, TIGHT, OVER_CAPACITY, INCOMPLETE_DATA, INVALID, LIFELONG }
 
     private Status status;
     private int totalRemainingMinutes;
@@ -18,6 +18,13 @@ public class FeasibilityResult {
         FeasibilityResult r = new FeasibilityResult();
         r.status = Status.INCOMPLETE_DATA;
         r.explanation = reason;
+        return r;
+    }
+
+    public static FeasibilityResult lifelong() {
+        FeasibilityResult r = new FeasibilityResult();
+        r.status = Status.LIFELONG;
+        r.explanation = "This is a lifelong goal with no target date, so there's no capacity deadline to track.";
         return r;
     }
 
@@ -58,6 +65,7 @@ public class FeasibilityResult {
             case OVER_CAPACITY: return "Over capacity";
             case INCOMPLETE_DATA: return "Incomplete data";
             case INVALID: return "Invalid";
+            case LIFELONG: return "Ongoing";
             default: return status.name();
         }
     }
@@ -70,6 +78,7 @@ public class FeasibilityResult {
             case OVER_CAPACITY: return "badge-danger";
             case INCOMPLETE_DATA: return "badge-secondary";
             case INVALID: return "badge-danger";
+            case LIFELONG: return "badge-info";
             default: return "badge-secondary";
         }
     }
