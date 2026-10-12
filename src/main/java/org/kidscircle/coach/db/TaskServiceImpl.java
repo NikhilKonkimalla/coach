@@ -36,6 +36,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public List<Task> getTasksDueOnForUser(long userId, LocalDate date) {
+        return taskRepository.findDueTodayForUser(userId, date);
+    }
+
+    @Override
     public List<Task> getTasksForWeek(long userId, LocalDate weekStart, LocalDate weekEnd) {
         return taskRepository.findForWeek(userId, weekStart, weekEnd);
     }

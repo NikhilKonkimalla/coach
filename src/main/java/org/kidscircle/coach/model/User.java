@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,6 +33,12 @@ public class User {
     private String displayName;
     private String timeZone = "America/New_York";
     private String weekStartsOn = "MONDAY";
+
+    @Column(unique = true)
+    private String resetToken;
+    private LocalDateTime resetTokenExpiresAt;
+
+    private LocalDate lastReminderSentAt;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -90,6 +97,15 @@ public class User {
 
     public String getWeekStartsOn() { return weekStartsOn; }
     public void setWeekStartsOn(String weekStartsOn) { this.weekStartsOn = weekStartsOn; }
+
+    public String getResetToken() { return resetToken; }
+    public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+
+    public LocalDateTime getResetTokenExpiresAt() { return resetTokenExpiresAt; }
+    public void setResetTokenExpiresAt(LocalDateTime resetTokenExpiresAt) { this.resetTokenExpiresAt = resetTokenExpiresAt; }
+
+    public LocalDate getLastReminderSentAt() { return lastReminderSentAt; }
+    public void setLastReminderSentAt(LocalDate lastReminderSentAt) { this.lastReminderSentAt = lastReminderSentAt; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

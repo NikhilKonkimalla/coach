@@ -15,6 +15,8 @@ public interface TaskService {
 
     List<Task> getDueTodayForUser(long userId);
 
+    List<Task> getTasksDueOnForUser(long userId, LocalDate date);
+
     List<Task> getTasksForWeek(long userId, LocalDate weekStart, LocalDate weekEnd);
 
     List<Task> getReadyTasksForUser(long userId);
