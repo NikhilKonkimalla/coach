@@ -39,8 +39,11 @@ public class EmailService {
         logger.info("Password reset email sent to {}", toEmail);
     }
 
-    public void sendDailyReminderEmail(String toEmail, List<Task> dueToday, List<Task> overdue) {
-        StringBuilder body = new StringBuilder("Here's what's on your plate today:\n\n");
+    public void sendDailyReminderEmail(String toEmail, String intro, List<Task> dueToday, List<Task> overdue) {
+        String opening = (intro != null && !intro.trim().isEmpty())
+                ? intro.trim()
+                : "Here's what's on your plate today:";
+        StringBuilder body = new StringBuilder(opening).append("\n\n");
 
         if (!overdue.isEmpty()) {
             body.append("Overdue:\n");

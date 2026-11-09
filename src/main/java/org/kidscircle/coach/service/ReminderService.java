@@ -1,7 +1,9 @@
 package org.kidscircle.coach.service;
 
+import org.kidscircle.coach.db.SurveyRepository;
 import org.kidscircle.coach.db.TaskService;
 import org.kidscircle.coach.db.UserService;
+import org.kidscircle.coach.model.Survey;
 import org.kidscircle.coach.model.Task;
 import org.kidscircle.coach.model.User;
 import org.slf4j.Logger;
@@ -27,6 +29,8 @@ public class ReminderService {
     @Autowired private UserService userService;
     @Autowired private TaskService taskService;
     @Autowired private EmailService emailService;
+    @Autowired private SurveyRepository surveyRepository;
+    @Autowired private OllamaService ollamaService;
 
     public void sendDueReminders() {
         for (User user : userService.findAllUsers()) {
@@ -53,8 +57,11 @@ public class ReminderService {
             return;
         }
 
+        Survey survey = surveyRepository.findSurveyByUserId(user.getUserId());
+        String intro = ollamaService.generateReminderMessage(survey, dueToday, overdue);
+
         try {
-            emailService.sendDailyReminderEmail(user.getEmail(), dueToday, overdue);
+            emailService.sendDailyReminderEmail(user.getEmail(), intro, dueToday, overdue);
         } catch (Exception e) {
             logger.error("Failed to send daily reminder to {}; will retry on next check", user.getEmail(), e);
             return;

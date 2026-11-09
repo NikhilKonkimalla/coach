@@ -3,6 +3,8 @@ package org.kidscircle.coach.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kidscircle.coach.model.Goal;
 import org.kidscircle.coach.model.Milestone;
+import org.kidscircle.coach.model.Survey;
+import org.kidscircle.coach.model.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +52,16 @@ public class OllamaService {
         } catch (Exception e) {
             log.error("Ollama task suggestion failed for milestone {}: {}", milestone.getMilestoneId(), e.getMessage());
             return Collections.emptyList();
+        }
+    }
+
+    public String generateReminderMessage(Survey survey, List<Task> dueToday, List<Task> overdue) {
+        try {
+            String content = callOllama(buildReminderPrompt(survey, dueToday, overdue));
+            return stripWrappingQuotes(content).trim();
+        } catch (Exception e) {
+            log.error("Ollama reminder message generation failed: {}", e.getMessage());
+            return null;
         }
     }
 
@@ -135,6 +147,52 @@ public class OllamaService {
                 + "- definitionOfDone: string (never an array)\n"
                 + "- No trailing commas. No extra fields. No comments.\n\n"
                 + "/no_think";
+    }
+
+    private String buildReminderPrompt(Survey survey, List<Task> dueToday, List<Task> overdue) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("You are a supportive, personalized productivity coach writing the opening lines of a ")
+          .append("daily reminder email.\n\n");
+
+        if (survey != null) {
+            sb.append("Here is this person's motivation profile, from a questionnaire they filled out:\n")
+              .append("- What drives them: ").append(orDash(survey.getDrive())).append("\n")
+              .append("- What they do when unmotivated: ").append(orDash(survey.getUnmotivated())).append("\n")
+              .append("- How strongly they believe in themselves: ").append(orDash(survey.getBelief())).append("\n")
+              .append("- How important a sense of purpose is to them: ").append(orDash(survey.getPurpose())).append("\n")
+              .append("- Effect of past successes on their motivation: ").append(orDash(survey.getSuccess())).append("\n")
+              .append("- How they respond to setbacks: ").append(orDash(survey.getSetback())).append("\n")
+              .append("- Environment they perform best in: ").append(orDash(survey.getEnvironment())).append("\n")
+              .append("- What distracts them most: ").append(orDash(survey.getDistract())).append("\n")
+              .append("- What helps them most after a setback: ").append(orDash(survey.getHelp())).append("\n\n");
+        } else {
+            sb.append("No motivation profile is available for this person yet — keep the tone warm but generic.\n\n");
+        }
+
+        sb.append("Today they have ").append(dueToday.size()).append(" task(s) due");
+        if (!overdue.isEmpty()) sb.append(" and ").append(overdue.size()).append(" overdue task(s)");
+        sb.append(". The tasks themselves will be listed separately below your message, so do not name or count them yourself.\n\n");
+
+        sb.append("Write a short, warm, motivational opening message (2-4 sentences) for their daily reminder email. ")
+          .append("Speak directly to them using \"you\". Tailor it to their profile above — e.g. appeal to what ")
+          .append("drives them, acknowledge how they tend to respond to setbacks or distraction, and nudge them ")
+          .append("toward whatever helps them most. Do not list their tasks. Do not use markdown or headings. ")
+          .append("Respond with ONLY the message text itself — no preamble, no quotation marks around it.\n\n")
+          .append("/no_think");
+
+        return sb.toString();
+    }
+
+    private String orDash(String value) {
+        return (value != null && !value.trim().isEmpty()) ? value : "(not answered)";
+    }
+
+    private String stripWrappingQuotes(String content) {
+        String trimmed = content.trim();
+        if (trimmed.length() > 1 && trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
+            return trimmed.substring(1, trimmed.length() - 1);
+        }
+        return trimmed;
     }
 
     // qwen3 sometimes emits `" "fieldName"` instead of `"fieldName"` — strip the spurious `" "` prefix

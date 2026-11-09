@@ -2,8 +2,10 @@ package org.kidscircle.coach.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.kidscircle.coach.db.SurveyRepository;
 import org.kidscircle.coach.db.TaskService;
 import org.kidscircle.coach.db.UserService;
+import org.kidscircle.coach.model.Survey;
 import org.kidscircle.coach.model.Task;
 import org.kidscircle.coach.model.User;
 
@@ -24,6 +26,8 @@ class ReminderServiceTest {
     private UserService userService;
     private TaskService taskService;
     private EmailService emailService;
+    private SurveyRepository surveyRepository;
+    private OllamaService ollamaService;
     private ReminderService reminderService;
 
     private User user;
@@ -34,11 +38,15 @@ class ReminderServiceTest {
         userService = mock(UserService.class);
         taskService = mock(TaskService.class);
         emailService = mock(EmailService.class);
+        surveyRepository = mock(SurveyRepository.class);
+        ollamaService = mock(OllamaService.class);
 
         reminderService = new ReminderService();
         setField("userService", userService);
         setField("taskService", taskService);
         setField("emailService", emailService);
+        setField("surveyRepository", surveyRepository);
+        setField("ollamaService", ollamaService);
 
         user = new User();
         user.setUserId(1L);
@@ -48,6 +56,7 @@ class ReminderServiceTest {
 
         when(taskService.getTasksDueOnForUser(anyLong(), eq(sevenAm.toLocalDate()))).thenReturn(Collections.emptyList());
         when(taskService.getReadyTasksForUser(anyLong())).thenReturn(Collections.emptyList());
+        when(ollamaService.generateReminderMessage(any(), any(), any())).thenReturn("You've got this today.");
     }
 
     private void setField(String name, Object value) {
@@ -85,12 +94,13 @@ class ReminderServiceTest {
         reminderService.sendReminderIfDue(user, sevenAm);
 
         verifyNoInteractions(emailService);
+        verifyNoInteractions(ollamaService);
         verify(userService).saveUser(user);
         assertEquals(sevenAm.toLocalDate(), user.getLastReminderSentAt());
     }
 
     @Test
-    void sendsDigestAndMarksSentWhenTasksAreDue() {
+    void sendsDigestWithAiIntroAndMarksSentWhenTasksAreDue() {
         Task dueToday = new Task();
         dueToday.setTitle("Write report");
         when(taskService.getTasksDueOnForUser(eq(1L), eq(sevenAm.toLocalDate())))
@@ -101,14 +111,35 @@ class ReminderServiceTest {
         overdue.setDueDate(sevenAm.toLocalDate().minusDays(2));
         when(taskService.getReadyTasksForUser(1L)).thenReturn(List.of(overdue, dueToday));
 
+        Survey survey = new Survey();
+        survey.setDrive("To support my family");
+        when(surveyRepository.findSurveyByUserId(1L)).thenReturn(survey);
+        when(ollamaService.generateReminderMessage(eq(survey), eq(List.of(dueToday)), eq(List.of(overdue))))
+                .thenReturn("Remember why you started.");
+
         reminderService.sendReminderIfDue(user, sevenAm);
 
         verify(emailService).sendDailyReminderEmail(
                 eq("deepika.appana@gmail.com"),
+                eq("Remember why you started."),
                 eq(List.of(dueToday)),
                 eq(List.of(overdue)));
         verify(userService).saveUser(user);
         assertEquals(sevenAm.toLocalDate(), user.getLastReminderSentAt());
+    }
+
+    @Test
+    void stillSendsDigestWhenAiIntroGenerationFails() {
+        Task dueToday = new Task();
+        dueToday.setTitle("Write report");
+        when(taskService.getTasksDueOnForUser(eq(1L), eq(sevenAm.toLocalDate())))
+                .thenReturn(List.of(dueToday));
+        when(ollamaService.generateReminderMessage(any(), any(), any())).thenReturn(null);
+
+        reminderService.sendReminderIfDue(user, sevenAm);
+
+        verify(emailService).sendDailyReminderEmail(eq("deepika.appana@gmail.com"), eq((String) null), any(), any());
+        verify(userService).saveUser(user);
     }
 
     @Test
@@ -118,7 +149,7 @@ class ReminderServiceTest {
         when(taskService.getTasksDueOnForUser(eq(1L), eq(sevenAm.toLocalDate())))
                 .thenReturn(List.of(dueToday));
         doThrow(new RuntimeException("smtp down"))
-                .when(emailService).sendDailyReminderEmail(any(), any(), any());
+                .when(emailService).sendDailyReminderEmail(any(), any(), any(), any());
 
         reminderService.sendReminderIfDue(user, sevenAm);
 
